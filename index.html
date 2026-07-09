@@ -1,11 +1,13 @@
 <html lang="pt-br"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Tratativas de base</title>
+<link rel="icon" type="image/png" sizes="120x120" href="https://www.ifood.com.br/static/images/favicon/ifood/apple-icon-120x120.png">
+<link rel="apple-touch-icon" href="https://www.ifood.com.br/static/images/favicon/ifood/apple-icon-120x120.png">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
 <style>
 body{transition:.3s}
 .dark{background:#121212!important;color:#eee}
 .dark .card{background:#1f1f1f;color:#eee}
-.dark .form-select,.dark .form-check-input{background-color:#2a2a2a;color:#eee;border-color:#444}
+.dark .form-select,.dark .form-check-input,.dark .form-control{background-color:#2a2a2a;color:#eee;border-color:#444}
 .dark table{color:#eee}
 .dark .text-muted{color:#b0b0b0!important}
 .dark small.text-muted{color:#b0b0b0!important}
@@ -31,10 +33,9 @@ body{transition:.3s}
 <h2 class="text-center mb-4">Tratativas de base</h2>
 
 <div class="card p-4">
-<div class="d-flex justify-content-between align-items-center mb-2">
-  <div id="drop" class="drop text-center flex-grow-1">Arraste o CSV aqui ou clique para selecionar<input id="file" type="file" accept=".csv" hidden=""></div>
-</div>
-<div class="text-end mb-3">
+<div id="drop" class="drop text-center">Arraste o CSV aqui ou clique para selecionar<input id="file" type="file" accept=".csv" hidden=""></div>
+
+<div class="text-end mb-3 mt-2">
   <button id="resetBtn" class="btn btn-outline-danger btn-sm" style="display:none">🔄 Novo arquivo</button>
 </div>
 
@@ -95,8 +96,6 @@ const A={
 const FIXED_HEADERS=["aquisicao_id","name","locale","phone","email","grupo_controle"];
 const MAPPING_STORAGE_KEY="tratativas_col_mapping";
 const CHUNK_SIZE=5000;
-
-// Regex para detectar padrão "telefone_email" no conteúdo da coluna
 const COMBINED_PATTERN=/^\d{8,15}_.+@.+\..+$/;
 
 let H=[],R=[],colTypes={},aqCols=[],learnedFrom={},autoCombined={};
@@ -125,8 +124,8 @@ themeBtn.onclick=()=>{
 // ---- Drop / upload ----
 drop.onclick=()=>file.click();
 drop.ondragover=e=>{e.preventDefault()};
-drop.ondrop=e=>{e.preventDefault();load(e.dataTransfer.files[0])};
-file.onchange=e=>load(e.target.files[0]);
+drop.ondrop=e=>{e.preventDefault();loadFile(e.dataTransfer.files[0])};
+file.onchange=e=>loadFile(e.target.files[0]);
 
 // ---- Reset / novo arquivo ----
 resetBtn.onclick=()=>{
@@ -173,30 +172,32 @@ function parseCSV(text){
   return {h,r};
 }
 
-function load(f){
+function processRawCsvText(rawText){
+  try{
+    let p=parseCSV(rawText);
+    if(!p.h.length){log.textContent="Erro: CSV vazio ou inválido.";return;}
+    H=p.h;R=p.r;colTypes={};aqCols=[];learnedFrom={};autoCombined={};
+    autoDetectTypes();
+    renderColMapping();
+    renderAquisicaoBuilder();
+    renderPreview();
+    renderFormattedPreview();
+    mappingWrap.style.display="block";
+    go.style.display="inline-block";
+    resetBtn.style.display="inline-block";
+    cards.innerHTML="";
+    let sizeWarning = R.length > 100000 ? " ⚠️ Base grande: o processamento será feito em lotes para não travar o navegador." : "";
+    log.textContent="Arquivo carregado: "+R.length+" registros, "+H.length+" colunas."+sizeWarning;
+  }catch(err){
+    log.textContent="Erro ao processar CSV: "+err.message;
+  }
+}
+
+function loadFile(f){
   if(!f) return;
   log.textContent="Lendo arquivo...";
   let fr=new FileReader();
-  fr.onload=()=>{
-    try{
-      let p=parseCSV(fr.result);
-      if(!p.h.length){log.textContent="Erro: CSV vazio ou inválido.";return;}
-      H=p.h;R=p.r;colTypes={};aqCols=[];learnedFrom={};autoCombined={};
-      autoDetectTypes();
-      renderColMapping();
-      renderAquisicaoBuilder();
-      renderPreview();
-      renderFormattedPreview();
-      mappingWrap.style.display="block";
-      go.style.display="inline-block";
-      resetBtn.style.display="inline-block";
-      cards.innerHTML="";
-      let sizeWarning = R.length > 100000 ? " ⚠️ Base grande: o processamento será feito em lotes para não travar o navegador." : "";
-      log.textContent="Arquivo carregado: "+R.length+" registros, "+H.length+" colunas."+sizeWarning;
-    }catch(err){
-      log.textContent="Erro ao processar CSV: "+err.message;
-    }
-  };
+  fr.onload=()=>processRawCsvText(fr.result);
   fr.onerror=()=>{log.textContent="Erro ao ler o arquivo.";};
   fr.readAsText(f,"UTF-8");
 }
@@ -206,7 +207,7 @@ function detectCombinedByContent(colName){
   let sample=R.slice(0, Math.min(20, R.length));
   if(!sample.length) return false;
   let matches=sample.filter(r=>COMBINED_PATTERN.test((r[colName]||"").trim())).length;
-  return matches / sample.length >= 0.7; // pelo menos 70% da amostra bate com o padrão
+  return matches / sample.length >= 0.7;
 }
 
 // Detecção: 1) mapeamento salvo 2) match exato no dicionário 3) padrão de conteúdo (combined) 4) fuzzy pelo nome
