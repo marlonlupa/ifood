@@ -1,0 +1,542 @@
+<html lang="pt-br"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Tratativas de base</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+<style>
+body{transition:.3s}
+.dark{background:#121212!important;color:#eee}
+.dark .card{background:#1f1f1f;color:#eee}
+.dark .form-select,.dark .form-check-input{background-color:#2a2a2a;color:#eee;border-color:#444}
+.dark table{color:#eee}
+.dark .text-muted{color:#b0b0b0!important}
+.dark small.text-muted{color:#b0b0b0!important}
+.dark code{background:#2a2a2a;color:#e6a4ff;padding:2px 6px;border-radius:4px}
+.drop{border:2px dashed #888;padding:35px;border-radius:12px;cursor:pointer}
+#loader{display:none}
+#themeBtn{position:fixed;top:16px;right:16px;z-index:1000;border-radius:50%;width:48px;height:48px;padding:0;font-size:20px}
+.col-map-row td{vertical-align:middle}
+.badge-type{font-size:.75em}
+#log{white-space:pre-wrap}
+.preview-formatted th{background:#198754;color:#fff}
+.dark .preview-formatted th{background:#14532d}
+.preview-raw th{background:#6c757d;color:#fff}
+.dark .preview-raw th{background:#3a3a3a}
+.saved-badge{font-size:.65em;background:#0d6efd}
+.combined-badge{font-size:.65em;background:#fd7e14}
+#progressWrap{display:none}
+</style></head><body class="bg-light">
+
+<button id="themeBtn" class="btn btn-outline-secondary" title="Alternar tema">🌙</button>
+
+<div class="container py-4">
+<h2 class="text-center mb-4">Tratativas de base</h2>
+
+<div class="card p-4">
+<div class="d-flex justify-content-between align-items-center mb-2">
+  <div id="drop" class="drop text-center flex-grow-1">Arraste o CSV aqui ou clique para selecionar<input id="file" type="file" accept=".csv" hidden=""></div>
+</div>
+<div class="text-end mb-3">
+  <button id="resetBtn" class="btn btn-outline-danger btn-sm" style="display:none">🔄 Novo arquivo</button>
+</div>
+
+<div id="mappingWrap" class="mt-4" style="display:none">
+  <h5>1. Classifique cada coluna</h5>
+  <p class="text-muted" style="font-size:.9em">Para cada coluna do arquivo, escolha o que ela representa. Colunas marcadas como "Telefone" terão os caracteres não numéricos removidos e o DDI 55 adicionado (se ainda não tiver). Colunas marcadas como "Ignorar" são mantidas como extras no arquivo final, sem tratamento. <span class="badge saved-badge">azul</span> = mapeamento lembrado de uma importação anterior. <span class="badge combined-badge">laranja</span> = detectado como Aquisição ID já pronta (phone_email).</p>
+  <table class="table table-sm align-middle">
+    <thead><tr><th>Coluna do CSV</th><th>Exemplo</th><th>Tipo</th></tr></thead>
+    <tbody id="colMapBody"></tbody>
+  </table>
+
+  <h5 class="mt-4">2. Monte o Aquisição ID</h5>
+  <p class="text-muted" style="font-size:.9em">Marque quais colunas (já tratadas, se telefone/email) devem compor o ID, na ordem desejada. Ex: telefone_new + email. <b>Se você tiver uma coluna marcada como "Aquisição ID pronta", essa etapa é ignorada automaticamente.</b></p>
+  <div id="aquisicaoIdBuilder" class="d-flex flex-wrap gap-3 mb-2"></div>
+  <div><small class="text-muted">Prévia do ID: </small><code id="aqPreview">-</code></div>
+</div>
+
+<div class="text-center mt-4"><button id="go" class="btn btn-primary" style="display:none">Processar</button></div>
+
+<div id="progressWrap" class="mt-3">
+  <div class="progress" style="height:22px">
+    <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-primary" role="progressbar" style="width:0%">0%</div>
+  </div>
+  <p id="progressText" class="text-center mt-2 mb-0 text-muted" style="font-size:.9em">Processando...</p>
+</div>
+
+<div id="loader" class="text-center mt-3"><div class="spinner-border"></div><p>Preparando...</p></div>
+<div class="row mt-4 text-center" id="cards"></div>
+
+<h5 class="mt-4">Pré-visualização (arquivo original)</h5>
+<div class="table-responsive"><table class="table table-sm preview-raw" id="preview"></table></div>
+
+<h5 class="mt-4">Pré-visualização formatada <span class="text-muted" style="font-size:.75em">(como vai ficar no CSV final — duplicados só são zerados no processamento final)</span></h5>
+<div class="table-responsive"><table class="table table-sm preview-formatted" id="previewFormatted"></table></div>
+
+<pre id="log"></pre>
+</div></div>
+
+<script>
+// ---- Dicionário expandido de variações de colunas ----
+const A={
+  name:["name","nome","cliente","nome_cliente","full_name","fullname","primeiro_nome","nomecompleto"],
+  phone:[
+    "phone","phone_new","telefone","celular","telefone_new","telehone_new","telefone_corrigido",
+    "phone_corrigido","fone","fone_new","numero","numero_telefone","whatsapp","whats","tel",
+    "telefonecelular","cellphone","mobile","contato","numerocelular","phonenumber"
+  ],
+  email:[
+    "email","e-mail","mail","email_new","e-mail_new","e-mail_corrigido","email_corrigido",
+    "emailcorrigido","correio","correioeletronico","endereco_email","mail_new","e_mail",
+    "emailaddress","email_address"
+  ],
+  combined:[
+    "aquisicao_id","aquisicaoid","subscriberkey","subscriber_key","id_aquisicao","chave_assinante"
+  ]
+};
+
+const FIXED_HEADERS=["aquisicao_id","name","locale","phone","email","grupo_controle"];
+const MAPPING_STORAGE_KEY="tratativas_col_mapping";
+const CHUNK_SIZE=5000;
+
+// Regex para detectar padrão "telefone_email" no conteúdo da coluna
+const COMBINED_PATTERN=/^\d{8,15}_.+@.+\..+$/;
+
+let H=[],R=[],colTypes={},aqCols=[],learnedFrom={},autoCombined={};
+const N=s=>(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]/g,"");
+
+// ---- Persistência de mapeamento ----
+function loadSavedMapping(){
+  try{ return JSON.parse(localStorage.getItem(MAPPING_STORAGE_KEY)||"{}"); }
+  catch(e){ return {}; }
+}
+function saveMappingForColumn(colName, type){
+  let saved=loadSavedMapping();
+  saved[N(colName)]=type;
+  localStorage.setItem(MAPPING_STORAGE_KEY, JSON.stringify(saved));
+}
+
+// ---- Tema ----
+if(localStorage.theme==="dark"){document.body.classList.add("dark");themeBtn.textContent="☀️";}
+themeBtn.onclick=()=>{
+  document.body.classList.toggle("dark");
+  let isDark=document.body.classList.contains("dark");
+  localStorage.theme=isDark?"dark":"light";
+  themeBtn.textContent=isDark?"☀️":"🌙";
+}
+
+// ---- Drop / upload ----
+drop.onclick=()=>file.click();
+drop.ondragover=e=>{e.preventDefault()};
+drop.ondrop=e=>{e.preventDefault();load(e.dataTransfer.files[0])};
+file.onchange=e=>load(e.target.files[0]);
+
+// ---- Reset / novo arquivo ----
+resetBtn.onclick=()=>{
+  H=[];R=[];colTypes={};aqCols=[];learnedFrom={};autoCombined={};
+  file.value="";
+  mappingWrap.style.display="none";
+  go.style.display="none";
+  resetBtn.style.display="none";
+  cards.innerHTML="";
+  preview.innerHTML="";
+  previewFormatted.innerHTML="";
+  log.textContent="";
+  colMapBody.innerHTML="";
+  aquisicaoIdBuilder.innerHTML="";
+  aqPreview.textContent="-";
+  progressWrap.style.display="none";
+}
+
+// ---- Parser robusto de CSV ----
+function parseCSV(text){
+  text=text.replace(/^\uFEFF/,'');
+  let sep=",";
+  let firstLine=text.split(/\r?\n/)[0];
+  if((firstLine.match(/;/g)||[]).length > (firstLine.match(/,/g)||[]).length) sep=";";
+  let rows=[],row=[],field="",inQuotes=false;
+  for(let i=0;i<text.length;i++){
+    let c=text[i],n=text[i+1];
+    if(inQuotes){
+      if(c==='"'&&n==='"'){field+='"';i++;}
+      else if(c==='"'){inQuotes=false;}
+      else field+=c;
+    } else {
+      if(c==='"'){inQuotes=true;}
+      else if(c===sep){row.push(field);field="";}
+      else if(c==='\n'){row.push(field);rows.push(row);row=[];field="";}
+      else if(c==='\r'){}
+      else field+=c;
+    }
+  }
+  if(field.length||row.length){row.push(field);rows.push(row);}
+  rows=rows.filter(r=>r.length>1||(r.length===1&&r[0].trim()!==""));
+  let h=rows[0].map(x=>x.trim());
+  let r=rows.slice(1).map(cols=>{let o={};h.forEach((k,i)=>o[k]=(cols[i]||"").trim());return o;});
+  return {h,r};
+}
+
+function load(f){
+  if(!f) return;
+  log.textContent="Lendo arquivo...";
+  let fr=new FileReader();
+  fr.onload=()=>{
+    try{
+      let p=parseCSV(fr.result);
+      if(!p.h.length){log.textContent="Erro: CSV vazio ou inválido.";return;}
+      H=p.h;R=p.r;colTypes={};aqCols=[];learnedFrom={};autoCombined={};
+      autoDetectTypes();
+      renderColMapping();
+      renderAquisicaoBuilder();
+      renderPreview();
+      renderFormattedPreview();
+      mappingWrap.style.display="block";
+      go.style.display="inline-block";
+      resetBtn.style.display="inline-block";
+      cards.innerHTML="";
+      let sizeWarning = R.length > 100000 ? " ⚠️ Base grande: o processamento será feito em lotes para não travar o navegador." : "";
+      log.textContent="Arquivo carregado: "+R.length+" registros, "+H.length+" colunas."+sizeWarning;
+    }catch(err){
+      log.textContent="Erro ao processar CSV: "+err.message;
+    }
+  };
+  fr.onerror=()=>{log.textContent="Erro ao ler o arquivo.";};
+  fr.readAsText(f,"UTF-8");
+}
+
+// Verifica se a maioria dos valores de amostra de uma coluna bate com o padrão phone_email
+function detectCombinedByContent(colName){
+  let sample=R.slice(0, Math.min(20, R.length));
+  if(!sample.length) return false;
+  let matches=sample.filter(r=>COMBINED_PATTERN.test((r[colName]||"").trim())).length;
+  return matches / sample.length >= 0.7; // pelo menos 70% da amostra bate com o padrão
+}
+
+// Detecção: 1) mapeamento salvo 2) match exato no dicionário 3) padrão de conteúdo (combined) 4) fuzzy pelo nome
+function autoDetectTypes(){
+  let saved=loadSavedMapping();
+  H.forEach(h=>{
+    let norm=N(h);
+    if(saved[norm]){
+      colTypes[h]=saved[norm];
+      learnedFrom[h]=true;
+      autoCombined[h]=false;
+      return;
+    }
+    let found="ignore";
+    for(let k in A){
+      if(A[k].map(N).includes(norm)){found=k;break;}
+    }
+    if(found==="ignore" && detectCombinedByContent(h)){
+      found="combined";
+      autoCombined[h]=true;
+    }
+    if(found==="ignore"){
+      if(/fone|tel|phone|cel|whats/.test(norm)) found="phone";
+      else if(/mail/.test(norm)) found="email";
+      else if(/nome|name|cliente/.test(norm)) found="name";
+    }
+    colTypes[h]=found;
+    learnedFrom[h]=false;
+  });
+}
+
+function renderColMapping(){
+  colMapBody.innerHTML="";
+  H.forEach(h=>{
+    let example=(R[0]&&R[0][h])||"";
+    let tr=document.createElement("tr");
+    tr.className="col-map-row";
+    let savedBadge=learnedFrom[h]?' <span class="badge saved-badge">lembrado</span>':'';
+    let combinedBadge=autoCombined[h]?' <span class="badge combined-badge">phone_email detectado</span>':'';
+    tr.innerHTML=`
+      <td><b>${h}</b>${savedBadge}${combinedBadge}</td>
+      <td class="text-muted">${example}</td>
+      <td>
+        <select class="form-select form-select-sm col-type" data-col="${h}">
+          <option value="name">Nome</option>
+          <option value="phone">Telefone</option>
+          <option value="email">Email</option>
+          <option value="combined">Aquisição ID pronta (phone_email)</option>
+          <option value="ignore">Ignorar (manter como extra)</option>
+        </select>
+      </td>`;
+    colMapBody.appendChild(tr);
+    tr.querySelector(".col-type").value=colTypes[h];
+  });
+  document.querySelectorAll(".col-type").forEach(sel=>{
+    sel.onchange=()=>{
+      colTypes[sel.dataset.col]=sel.value;
+      learnedFrom[sel.dataset.col]=false;
+      autoCombined[sel.dataset.col]=false;
+      saveMappingForColumn(sel.dataset.col, sel.value);
+      renderColMapping();
+      renderAquisicaoBuilder();
+      renderPreview();
+      renderFormattedPreview();
+    }
+  });
+}
+
+function renderAquisicaoBuilder(){
+  let combinedCol=H.find(h=>colTypes[h]==="combined");
+  if(combinedCol){
+    aquisicaoIdBuilder.innerHTML=`<span class="text-muted">Aquisição ID será extraído diretamente da coluna <b>${combinedCol}</b> (phone_email), esta etapa não é necessária.</span>`;
+    aqPreview.textContent = R.length ? (R[0][combinedCol]||"-") : "-";
+    return;
+  }
+  aquisicaoIdBuilder.innerHTML="";
+  H.forEach(h=>{
+    if(colTypes[h]==="combined") return;
+    let checked=aqCols.includes(h)?"checked":"";
+    let div=document.createElement("div");
+    div.className="form-check";
+    div.innerHTML=`<input class="form-check-input aq-check" type="checkbox" value="${h}" id="aq_${h}" ${checked}>
+      <label class="form-check-label" for="aq_${h}">${h} <span class="badge bg-secondary badge-type">${labelType(colTypes[h])}</span></label>`;
+    aquisicaoIdBuilder.appendChild(div);
+  });
+  if(!aqCols.length){
+    let phoneCol=H.find(h=>colTypes[h]==="phone");
+    let emailCol=H.find(h=>colTypes[h]==="email");
+    aqCols=[phoneCol,emailCol].filter(Boolean);
+  }
+  document.querySelectorAll(".aq-check").forEach(cb=>{
+    cb.checked=aqCols.includes(cb.value);
+    cb.onchange=()=>{
+      if(cb.checked){ if(!aqCols.includes(cb.value)) aqCols.push(cb.value); }
+      else{ aqCols=aqCols.filter(c=>c!==cb.value); }
+      updateAqPreview();
+      renderFormattedPreview();
+    }
+  });
+  updateAqPreview();
+}
+
+function labelType(t){
+  return {name:"Nome",phone:"Telefone",email:"Email",combined:"Aquisição ID pronta",ignore:"Extra"}[t]||t;
+}
+
+function updateAqPreview(){
+  let combinedCol=H.find(h=>colTypes[h]==="combined");
+  if(combinedCol){
+    aqPreview.textContent = R.length ? (R[0][combinedCol]||"-") : "-";
+    return;
+  }
+  if(!R.length||!aqCols.length){aqPreview.textContent="-";return;}
+  let vals=aqCols.map(c=>{
+    let raw=R[0][c]||"";
+    return colTypes[c]==="phone"?C(raw):raw.trim().toLowerCase();
+  });
+  aqPreview.textContent=vals.join("_");
+}
+
+function renderPreview(){
+  let t="<tr>"+H.map(x=>"<th>"+x+" <small class='text-muted'>("+labelType(colTypes[x])+")</small></th>").join("")+"</tr>";
+  R.slice(0,5).forEach(r=>t+="<tr>"+H.map(h=>"<td>"+(r[h]||"")+"</td>").join("")+"</tr>");
+  preview.innerHTML=t;
+}
+
+function getSafeExtraCols(extraCols){
+  return extraCols.map(h => FIXED_HEADERS.includes(h) ? h+"_original" : h);
+}
+
+// Extrai phone e email de um valor no formato "telefone_email" (split apenas no primeiro underscore)
+function splitCombined(value){
+  let idx=(value||"").indexOf("_");
+  if(idx===-1) return {phone:"", email:""};
+  let phonePart=value.substring(0,idx);
+  let emailPart=value.substring(idx+1);
+  return {phone:phonePart.trim(), email:emailPart.trim().toLowerCase()};
+}
+
+function renderFormattedPreview(){
+  if(!R.length){previewFormatted.innerHTML="";return;}
+  let combinedCol=H.find(h=>colTypes[h]==="combined");
+  let nameCol=H.find(h=>colTypes[h]==="name");
+  let phoneCol=H.find(h=>colTypes[h]==="phone");
+  let emailCol=H.find(h=>colTypes[h]==="email");
+
+  let mappedCols=new Set([nameCol,phoneCol,emailCol,combinedCol].filter(Boolean));
+  let extraCols=H.filter(h=>!mappedCols.has(h));
+  let safeExtraCols=getSafeExtraCols(extraCols);
+
+  let headers=["aquisicao_id","name","locale","phone","email","grupo_controle",...safeExtraCols];
+  let t="<tr>"+headers.map(h=>"<th>"+h+"</th>").join("")+"</tr>";
+
+  R.slice(0,5).forEach(r=>{
+    let n=toTitleCase(r[nameCol]||"");
+    let po="",em="",aq="";
+
+    if(combinedCol){
+      let raw=r[combinedCol]||"";
+      let sp=splitCombined(raw);
+      po=C(sp.phone);
+      em=sp.email;
+      aq=po+"_"+em;
+    }else{
+      po=phoneCol?C(r[phoneCol]):"";
+      em=emailCol?(r[emailCol]||"").trim().toLowerCase():"";
+      let aqParts=aqCols.map(c=>{
+        let raw=r[c]||"";
+        return colTypes[c]==="phone"?C(raw):raw.trim().toLowerCase();
+      });
+      aq=aqParts.join("_");
+    }
+
+    let g=po.endsWith("0")?"1":"0";
+    let extraVals=extraCols.map(c=>r[c]||"");
+    let rowVals=[aq,n,"br",po,em,g,...extraVals];
+    t+="<tr>"+rowVals.map(v=>"<td>"+v+"</td>").join("")+"</tr>";
+  });
+  previewFormatted.innerHTML=t;
+}
+
+const C=p=>{
+  p=(p||"").replace(/\D/g,"");
+  if(!p) return "";
+  if(!p.startsWith("55")) p="55"+p;
+  return p;
+}
+
+function toTitleCase(str){
+  if(!str) return "";
+  return str.trim().toLowerCase().replace(/(^|\s|-|')([a-zà-ú])/g, (m,sep,letra)=>sep+letra.toUpperCase());
+}
+
+function csvEscape(v){
+  let s=String(v);
+  if(/[",\n\r]/.test(s)){
+    return '"'+s.replace(/"/g,'""')+'"';
+  }
+  return s;
+}
+
+function buildCsvLine(rowArr){
+  return rowArr.map((v,idx)=> idx===5 ? String(v) : csvEscape(v)).join(",");
+}
+
+go.onclick=()=>{
+  let combinedCol=H.find(h=>colTypes[h]==="combined");
+  let nameCol=H.find(h=>colTypes[h]==="name");
+  let phoneCol=H.find(h=>colTypes[h]==="phone");
+  let emailCol=H.find(h=>colTypes[h]==="email");
+
+  if(!combinedCol && !phoneCol){
+    log.textContent="Erro: nenhuma coluna marcada como Telefone ou como Aquisição ID pronta.";
+    return;
+  }
+  if(!combinedCol && !aqCols.length){
+    log.textContent="Erro: selecione ao menos uma coluna para compor o Aquisição ID.";
+    return;
+  }
+
+  H.forEach(h=>saveMappingForColumn(h, colTypes[h]));
+
+  let mappedCols=new Set([nameCol,phoneCol,emailCol,combinedCol].filter(Boolean));
+  let extraCols=H.filter(h=>!mappedCols.has(h));
+  let safeExtraCols=getSafeExtraCols(extraCols);
+  let headers=["aquisicao_id","name","locale","phone","email","grupo_controle",...safeExtraCols];
+
+  let sp=new Set(),se=new Set(),gc=0,dp=0,de=0;
+  let csvLines=[];
+  csvLines.push(headers.map(h=>csvEscape(h)).join(","));
+
+  const total=R.length;
+  let processed=0;
+
+  go.disabled=true;
+  progressWrap.style.display="block";
+  loader.style.display="none";
+  progressBar.style.width="0%";
+  progressBar.textContent="0%";
+  progressText.textContent=`Processando 0 de ${total}...`;
+  log.textContent="";
+
+  function processChunk(){
+    let end=Math.min(processed+CHUNK_SIZE, total);
+    for(let i=processed;i<end;i++){
+      let r=R[i];
+      let n=toTitleCase(r[nameCol]||"");
+      let po="",em="",aq="";
+
+      if(combinedCol){
+        let raw=r[combinedCol]||"";
+        let spl=splitCombined(raw);
+        po=C(spl.phone);
+        em=spl.email;
+      }else{
+        po=C(r[phoneCol]);
+        em=emailCol?(r[emailCol]||"").trim().toLowerCase():"";
+      }
+
+      if(combinedCol){
+        aq=po+"_"+em;
+      }else{
+        let aqParts=aqCols.map(c=>{
+          let raw=r[c]||"";
+          return colTypes[c]==="phone"?C(raw):raw.trim().toLowerCase();
+        });
+        aq=aqParts.join("_");
+      }
+
+      let g=po.endsWith("0")?"1":"0";
+      if(g==="1") gc++;
+
+      let ph=po;
+      if(po && sp.has(po)){ph="";dp++;}
+      else if(po) sp.add(po);
+
+      if(em && se.has(em)){em="";de++;}
+      else if(em) se.add(em);
+
+      let extraVals=extraCols.map(c=>r[c]||"");
+      csvLines.push(buildCsvLine([aq,n,"br",ph,em,g,...extraVals]));
+    }
+    processed=end;
+    let pct=Math.round((processed/total)*100);
+    progressBar.style.width=pct+"%";
+    progressBar.textContent=pct+"%";
+    progressText.textContent=`Processando ${processed.toLocaleString('pt-BR')} de ${total.toLocaleString('pt-BR')}...`;
+
+    if(processed<total){
+      setTimeout(processChunk, 0);
+    }else{
+      finishExport();
+    }
+  }
+
+  function finishExport(){
+    progressText.textContent="Gerando arquivo para download...";
+    setTimeout(()=>{
+      let BOM="\uFEFF";
+      let parts=[BOM];
+      const JOIN_BATCH=2000;
+      for(let i=0;i<csvLines.length;i+=JOIN_BATCH){
+        parts.push(csvLines.slice(i,i+JOIN_BATCH).join("\n")+"\n");
+      }
+      let blob=new Blob(parts,{type:"text/csv;charset=utf-8;"});
+      let a=document.createElement("a");
+      a.href=URL.createObjectURL(blob);
+      a.download="tratado.csv";
+      a.click();
+      URL.revokeObjectURL(a.href);
+
+      cards.innerHTML=`
+        <div class="col"><div class="card p-2"><b>${R.length.toLocaleString('pt-BR')}</b><br>Total de Registros</div></div>
+        <div class="col"><div class="card p-2"><b>${gc.toLocaleString('pt-BR')}</b><br>Grupo Controle</div></div>
+        <div class="col"><div class="card p-2"><b>${dp.toLocaleString('pt-BR')}</b><br>Telefones Duplicados</div></div>
+        <div class="col"><div class="card p-2"><b>${de.toLocaleString('pt-BR')}</b><br>Emails Duplicados</div></div>
+      `;
+      progressWrap.style.display="none";
+      go.disabled=false;
+      log.textContent =
+        `Concluído com sucesso!\n`+
+        `- Total de registros processados: ${R.length}\n`+
+        `- Grupo controle: ${gc}\n`+
+        `- Telefones duplicados (zerados): ${dp}\n`+
+        `- Emails duplicados (zerados): ${de}\n`+
+        `- Colunas extras preservadas: ${extraCols.length?extraCols.join(", "):"nenhuma"}\n`+
+        (combinedCol ? `- Aquisição ID extraído da coluna: ${combinedCol}` : `- Aquisição ID composto por: ${aqCols.join(" + ")}`);
+    }, 50);
+  }
+
+  processChunk();
+}
+</script></body></html>
