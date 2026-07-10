@@ -24,6 +24,7 @@ body{transition:.3s}
 .dark .preview-raw th{background:#3a3a3a}
 .saved-badge{font-size:.65em;background:#0d6efd}
 .combined-badge{font-size:.65em;background:#fd7e14}
+.delete-badge{font-size:.65em;background:#dc3545}
 #progressWrap{display:none}
 </style></head><body class="bg-light">
 
@@ -41,14 +42,14 @@ body{transition:.3s}
 
 <div id="mappingWrap" class="mt-4" style="display:none">
   <h5>1. Classifique cada coluna</h5>
-  <p class="text-muted" style="font-size:.9em">Para cada coluna do arquivo, escolha o que ela representa. Colunas marcadas como "Telefone" terão os caracteres não numéricos removidos e o DDI 55 adicionado (se ainda não tiver). Colunas marcadas como "Ignorar" são mantidas como extras no arquivo final, sem tratamento. <span class="badge saved-badge">azul</span> = mapeamento lembrado de uma importação anterior. <span class="badge combined-badge">laranja</span> = detectado como Aquisição ID já pronta (phone_email).</p>
+  <p class="text-muted" style="font-size:.9em">Para cada coluna do arquivo, escolha o que ela representa. Colunas marcadas como "Telefone" terão os caracteres não numéricos removidos, o DDI 55 adicionado (se ainda não tiver) e o nono dígito "9" inserido quando faltar. Colunas marcadas como "Ignorar" são mantidas como extras no arquivo final, sem tratamento. Colunas marcadas como "Excluir" não aparecem no arquivo final. <span class="badge saved-badge">azul</span> = mapeamento lembrado de uma importação anterior. <span class="badge combined-badge">laranja</span> = detectado como Aquisição ID já pronta (phone_email).</p>
   <table class="table table-sm align-middle">
     <thead><tr><th>Coluna do CSV</th><th>Exemplo</th><th>Tipo</th></tr></thead>
     <tbody id="colMapBody"></tbody>
   </table>
 
   <h5 class="mt-4">2. Monte o Aquisição ID</h5>
-  <p class="text-muted" style="font-size:.9em">Marque quais colunas (já tratadas, se telefone/email) devem compor o ID, na ordem desejada. Ex: telefone_new + email. <b>Se você tiver uma coluna marcada como "Aquisição ID pronta", essa etapa é ignorada automaticamente.</b></p>
+  <p class="text-muted" style="font-size:.9em">Marque quais colunas (já tratadas, se telefone/email) devem compor o ID, na ordem desejada. Ex: telefone_new + email. <b>Se você tiver uma coluna marcada como "Aquisição ID pronta", essa etapa é ignorada automaticamente.</b> O Aquisição ID sempre usa o telefone e email completos (nunca zerados), pois é a chave única do registro. Já a coluna "phone" do arquivo final só fica preenchida na primeira linha que também tiver e-mail junto (linhas com telefone sozinho, sem e-mail, nunca recebem o telefone). A coluna "email" segue a mesma lógica de primeira ocorrência.</p>
   <div id="aquisicaoIdBuilder" class="d-flex flex-wrap gap-3 mb-2"></div>
   <div><small class="text-muted">Prévia do ID: </small><code id="aqPreview">-</code></div>
 </div>
@@ -68,7 +69,7 @@ body{transition:.3s}
 <h5 class="mt-4">Pré-visualização (arquivo original)</h5>
 <div class="table-responsive"><table class="table table-sm preview-raw" id="preview"></table></div>
 
-<h5 class="mt-4">Pré-visualização formatada <span class="text-muted" style="font-size:.75em">(como vai ficar no CSV final — duplicados só são zerados no processamento final)</span></h5>
+<h5 class="mt-4">Pré-visualização formatada <span class="text-muted" style="font-size:.75em">(como vai ficar no CSV final — duplicados só são tratados no processamento final)</span></h5>
 <div class="table-responsive"><table class="table table-sm preview-formatted" id="previewFormatted"></table></div>
 
 <pre id="log"></pre>
@@ -81,15 +82,16 @@ const A={
   phone:[
     "phone","phone_new","telefone","celular","telefone_new","telehone_new","telefone_corrigido",
     "phone_corrigido","fone","fone_new","numero","numero_telefone","whatsapp","whats","tel",
-    "telefonecelular","cellphone","mobile","contato","numerocelular","phonenumber"
+    "telefonecelular","cellphone","mobile","contato","numerocelular","phonenumber",
+    "user_phone_number","user_phone_vuc"
   ],
   email:[
     "email","e-mail","mail","email_new","e-mail_new","e-mail_corrigido","email_corrigido",
     "emailcorrigido","correio","correioeletronico","endereco_email","mail_new","e_mail",
-    "emailaddress","email_address"
+    "emailaddress","email_address","user_email_vuc"
   ],
   combined:[
-    "aquisicao_id","aquisicaoid","subscriberkey","subscriber_key","id_aquisicao","chave_assinante"
+    "aquisicao_id","aquisicaoid","subscriberkey","subscriber_key","id_aquisicao","chave_assinante","id"
   ]
 };
 
@@ -257,6 +259,7 @@ function renderColMapping(){
           <option value="email">Email</option>
           <option value="combined">Aquisição ID pronta (phone_email)</option>
           <option value="ignore">Ignorar (manter como extra)</option>
+          <option value="delete">🗑️ Excluir (remover do arquivo final)</option>
         </select>
       </td>`;
     colMapBody.appendChild(tr);
@@ -285,7 +288,7 @@ function renderAquisicaoBuilder(){
   }
   aquisicaoIdBuilder.innerHTML="";
   H.forEach(h=>{
-    if(colTypes[h]==="combined") return;
+    if(colTypes[h]==="combined"||colTypes[h]==="delete") return;
     let checked=aqCols.includes(h)?"checked":"";
     let div=document.createElement("div");
     div.className="form-check";
@@ -311,7 +314,12 @@ function renderAquisicaoBuilder(){
 }
 
 function labelType(t){
-  return {name:"Nome",phone:"Telefone",email:"Email",combined:"Aquisição ID pronta",ignore:"Extra"}[t]||t;
+  return {name:"Nome",phone:"Telefone",email:"Email",combined:"Aquisição ID pronta",ignore:"Extra",delete:"Excluir"}[t]||t;
+}
+
+// Monta o Aquisição ID sem deixar underscore sobrando quando alguma parte estiver vazia
+function buildAquisicaoId(parts){
+  return parts.filter(p=>p && p.trim()!=="").join("_");
 }
 
 function updateAqPreview(){
@@ -325,7 +333,7 @@ function updateAqPreview(){
     let raw=R[0][c]||"";
     return colTypes[c]==="phone"?C(raw):raw.trim().toLowerCase();
   });
-  aqPreview.textContent=vals.join("_");
+  aqPreview.textContent=buildAquisicaoId(vals) || "-";
 }
 
 function renderPreview(){
@@ -355,7 +363,7 @@ function renderFormattedPreview(){
   let emailCol=H.find(h=>colTypes[h]==="email");
 
   let mappedCols=new Set([nameCol,phoneCol,emailCol,combinedCol].filter(Boolean));
-  let extraCols=H.filter(h=>!mappedCols.has(h));
+  let extraCols=H.filter(h=>!mappedCols.has(h) && colTypes[h]!=="delete");
   let safeExtraCols=getSafeExtraCols(extraCols);
 
   let headers=["aquisicao_id","name","locale","phone","email","grupo_controle",...safeExtraCols];
@@ -370,15 +378,17 @@ function renderFormattedPreview(){
       let sp=splitCombined(raw);
       po=C(sp.phone);
       em=sp.email;
-      aq=po+"_"+em;
+      aq=buildAquisicaoId([po,em]);
     }else{
       po=phoneCol?C(r[phoneCol]):"";
       em=emailCol?(r[emailCol]||"").trim().toLowerCase():"";
       let aqParts=aqCols.map(c=>{
+        if(c===phoneCol) return po;
+        if(c===emailCol) return em;
         let raw=r[c]||"";
         return colTypes[c]==="phone"?C(raw):raw.trim().toLowerCase();
       });
-      aq=aqParts.join("_");
+      aq=buildAquisicaoId(aqParts);
     }
 
     let g=po.endsWith("0")?"1":"0";
@@ -389,11 +399,22 @@ function renderFormattedPreview(){
   previewFormatted.innerHTML=t;
 }
 
+// Normaliza telefone: remove caracteres não numéricos, garante DDI 55 e o nono dígito quando faltar
 const C=p=>{
   p=(p||"").replace(/\D/g,"");
   if(!p) return "";
   if(!p.startsWith("55")) p="55"+p;
-  return p;
+
+  let rest=p.slice(2);
+  if(rest.length===10){
+    let ddd=rest.slice(0,2);
+    let number=rest.slice(2);
+    if(!number.startsWith("9")){
+      number="9"+number;
+    }
+    rest=ddd+number;
+  }
+  return "55"+rest;
 }
 
 function toTitleCase(str){
@@ -431,64 +452,106 @@ go.onclick=()=>{
   H.forEach(h=>saveMappingForColumn(h, colTypes[h]));
 
   let mappedCols=new Set([nameCol,phoneCol,emailCol,combinedCol].filter(Boolean));
-  let extraCols=H.filter(h=>!mappedCols.has(h));
+  let extraCols=H.filter(h=>!mappedCols.has(h) && colTypes[h]!=="delete");
   let safeExtraCols=getSafeExtraCols(extraCols);
   let headers=["aquisicao_id","name","locale","phone","email","grupo_controle",...safeExtraCols];
 
-  let sp=new Set(),se=new Set(),gc=0,dp=0,de=0;
-  let csvLines=[];
-  csvLines.push(headers.map(h=>csvEscape(h)).join(","));
-
   const total=R.length;
-  let processed=0;
 
   go.disabled=true;
   progressWrap.style.display="block";
   loader.style.display="none";
   progressBar.style.width="0%";
   progressBar.textContent="0%";
-  progressText.textContent=`Processando 0 de ${total}...`;
+  progressText.textContent=`Analisando registros...`;
   log.textContent="";
+
+  // ---- PRIMEIRA PASSADA: calcula phone/email de cada linha e decide qual linha "leva" cada valor ----
+  // Regra (Opção B): telefone só é mantido na PRIMEIRA linha que também tiver email preenchido.
+  // Linhas com telefone sozinho (sem email) nunca recebem o telefone.
+  // Email segue a lógica simples de primeira ocorrência (independente de ter telefone ou não).
+  let rowPhones=new Array(total);
+  let rowEmails=new Array(total);
+  let phoneKeepIndex={}; // phone -> índice da linha que deve manter o telefone
+  let emailSeen=new Set();
+
+  for(let i=0;i<total;i++){
+    let r=R[i];
+    let po="",em="";
+    if(combinedCol){
+      let raw=r[combinedCol]||"";
+      let spl=splitCombined(raw);
+      po=C(spl.phone);
+      em=spl.email;
+    }else{
+      po=C(r[phoneCol]);
+      em=emailCol?(r[emailCol]||"").trim().toLowerCase():"";
+    }
+    rowPhones[i]=po;
+    rowEmails[i]=em;
+
+    // Só considera essa linha como candidata a "levar" o telefone se ela tiver email também
+    if(po && em && phoneKeepIndex[po]===undefined){
+      phoneKeepIndex[po]=i;
+    }
+  }
+  // Fallback: se um telefone nunca apareceu com email em nenhuma linha, mantém na primeira ocorrência dele mesmo assim
+  let phoneFirstSeen={};
+  for(let i=0;i<total;i++){
+    let po=rowPhones[i];
+    if(po && phoneFirstSeen[po]===undefined){
+      phoneFirstSeen[po]=i;
+    }
+  }
+  for(let po in phoneFirstSeen){
+    if(phoneKeepIndex[po]===undefined){
+      phoneKeepIndex[po]=phoneFirstSeen[po];
+    }
+  }
+
+  let sp=new Set(),se=new Set();
+  let gc=0,dp=0,de=0;
+  let csvLines=[];
+  csvLines.push(headers.map(h=>csvEscape(h)).join(","));
+
+  let processed=0;
 
   function processChunk(){
     let end=Math.min(processed+CHUNK_SIZE, total);
     for(let i=processed;i<end;i++){
       let r=R[i];
       let n=toTitleCase(r[nameCol]||"");
-      let po="",em="",aq="";
+      let po=rowPhones[i];
+      let em=rowEmails[i];
 
+      // aquisicao_id SEMPRE usa telefone e email originais (nunca zerados) — é a chave única do registro
+      let aq;
       if(combinedCol){
-        let raw=r[combinedCol]||"";
-        let spl=splitCombined(raw);
-        po=C(spl.phone);
-        em=spl.email;
-      }else{
-        po=C(r[phoneCol]);
-        em=emailCol?(r[emailCol]||"").trim().toLowerCase():"";
-      }
-
-      if(combinedCol){
-        aq=po+"_"+em;
+        aq=buildAquisicaoId([po,em]);
       }else{
         let aqParts=aqCols.map(c=>{
+          if(c===phoneCol) return po;
+          if(c===emailCol) return em;
           let raw=r[c]||"";
           return colTypes[c]==="phone"?C(raw):raw.trim().toLowerCase();
         });
-        aq=aqParts.join("_");
+        aq=buildAquisicaoId(aqParts);
       }
+
+      // Telefone: só mantém se esta linha for a "eleita" para aquele número (phoneKeepIndex)
+      let ph = (po && phoneKeepIndex[po]===i) ? po : "";
+      if(po && ph===""){ dp++; } // contabiliza como zerado por regra de prioridade
+
+      // Email: mantém apenas na primeira ocorrência simples
+      let emFinal=em;
+      if(em && se.has(em)){emFinal="";de++;}
+      else if(em) se.add(em);
 
       let g=po.endsWith("0")?"1":"0";
       if(g==="1") gc++;
 
-      let ph=po;
-      if(po && sp.has(po)){ph="";dp++;}
-      else if(po) sp.add(po);
-
-      if(em && se.has(em)){em="";de++;}
-      else if(em) se.add(em);
-
       let extraVals=extraCols.map(c=>r[c]||"");
-      csvLines.push(buildCsvLine([aq,n,"br",ph,em,g,...extraVals]));
+      csvLines.push(buildCsvLine([aq,n,"br",ph,emFinal,g,...extraVals]));
     }
     processed=end;
     let pct=Math.round((processed/total)*100);
@@ -522,8 +585,8 @@ go.onclick=()=>{
       cards.innerHTML=`
         <div class="col"><div class="card p-2"><b>${R.length.toLocaleString('pt-BR')}</b><br>Total de Registros</div></div>
         <div class="col"><div class="card p-2"><b>${gc.toLocaleString('pt-BR')}</b><br>Grupo Controle</div></div>
-        <div class="col"><div class="card p-2"><b>${dp.toLocaleString('pt-BR')}</b><br>Telefones Duplicados</div></div>
-        <div class="col"><div class="card p-2"><b>${de.toLocaleString('pt-BR')}</b><br>Emails Duplicados</div></div>
+        <div class="col"><div class="card p-2"><b>${dp.toLocaleString('pt-BR')}</b><br>Telefones Zerados (repetidos ou sem email)</div></div>
+        <div class="col"><div class="card p-2"><b>${de.toLocaleString('pt-BR')}</b><br>Emails Zerados (repetidos)</div></div>
       `;
       progressWrap.style.display="none";
       go.disabled=false;
@@ -531,8 +594,8 @@ go.onclick=()=>{
         `Concluído com sucesso!\n`+
         `- Total de registros processados: ${R.length}\n`+
         `- Grupo controle: ${gc}\n`+
-        `- Telefones duplicados (zerados): ${dp}\n`+
-        `- Emails duplicados (zerados): ${de}\n`+
+        `- Telefones zerados (repetidos ou linha sem email, priorizando linha com email): ${dp}\n`+
+        `- Emails zerados por repetição: ${de}\n`+
         `- Colunas extras preservadas: ${extraCols.length?extraCols.join(", "):"nenhuma"}\n`+
         (combinedCol ? `- Aquisição ID extraído da coluna: ${combinedCol}` : `- Aquisição ID composto por: ${aqCols.join(" + ")}`);
     }, 50);
