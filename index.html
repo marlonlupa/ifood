@@ -1,3 +1,4 @@
+
 <html lang="pt-br"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Tratativas de base</title>
 <link rel="icon" type="image/png" sizes="120x120" href="https://www.ifood.com.br/static/images/favicon/ifood/apple-icon-120x120.png">
@@ -49,7 +50,7 @@ body{transition:.3s}
   </table>
 
   <h5 class="mt-4">2. Monte o Aquisição ID</h5>
-  <p class="text-muted" style="font-size:.9em">Marque quais colunas (já tratadas, se telefone/email) devem compor o ID, na ordem desejada. Ex: telefone_new + email. <b>Se você tiver uma coluna marcada como "Aquisição ID pronta", essa etapa é ignorada automaticamente.</b> O Aquisição ID sempre usa o telefone e email completos (nunca zerados), pois é a chave única do registro. Já a coluna "phone" do arquivo final só fica preenchida na primeira linha que também tiver e-mail junto (linhas com telefone sozinho, sem e-mail, nunca recebem o telefone). A coluna "email" segue a mesma lógica de primeira ocorrência.</p>
+  <p class="text-muted" style="font-size:.9em">Marque quais colunas (já tratadas, se telefone/email) devem compor o ID, na ordem desejada. Ex: telefone_new + email. <b>Se você tiver uma coluna marcada como "Aquisição ID pronta", essa etapa é ignorada automaticamente.</b> O Aquisição ID sempre usa o telefone e email completos (nunca zerados), pois é a chave única do registro. Já a coluna "telefone" do arquivo final só fica preenchida na primeira linha que também tiver e-mail junto (linhas com telefone sozinho, sem e-mail, nunca recebem o telefone). A coluna "email" segue a mesma lógica de primeira ocorrência.</p>
   <div id="aquisicaoIdBuilder" class="d-flex flex-wrap gap-3 mb-2"></div>
   <div><small class="text-muted">Prévia do ID: </small><code id="aqPreview">-</code></div>
 </div>
@@ -95,7 +96,11 @@ const A={
   ]
 };
 
+// FIXED_HEADERS: nomes internos usados p/ evitar colisão de nomes com colunas extras
 const FIXED_HEADERS=["aquisicao_id","name","locale","phone","email","grupo_controle"];
+// Cabeçalhos que efetivamente vão no CSV de saída (telefone em português)
+const OUTPUT_HEADERS=["aquisicao_id","name","locale","telefone","email","grupo_controle"];
+
 const MAPPING_STORAGE_KEY="tratativas_col_mapping";
 const CHUNK_SIZE=5000;
 const COMBINED_PATTERN=/^\d{8,15}_.+@.+\..+$/;
@@ -342,6 +347,8 @@ function renderPreview(){
   preview.innerHTML=t;
 }
 
+// getSafeExtraCols usa FIXED_HEADERS (nomes internos) pra checar colisão, já que a comparação
+// é feita com o nome original da coluna do CSV de entrada
 function getSafeExtraCols(extraCols){
   return extraCols.map(h => FIXED_HEADERS.includes(h) ? h+"_original" : h);
 }
@@ -366,7 +373,7 @@ function renderFormattedPreview(){
   let extraCols=H.filter(h=>!mappedCols.has(h) && colTypes[h]!=="delete");
   let safeExtraCols=getSafeExtraCols(extraCols);
 
-  let headers=["aquisicao_id","name","locale","phone","email","grupo_controle",...safeExtraCols];
+  let headers=[...OUTPUT_HEADERS,...safeExtraCols];
   let t="<tr>"+headers.map(h=>"<th>"+h+"</th>").join("")+"</tr>";
 
   R.slice(0,5).forEach(r=>{
@@ -454,7 +461,7 @@ go.onclick=()=>{
   let mappedCols=new Set([nameCol,phoneCol,emailCol,combinedCol].filter(Boolean));
   let extraCols=H.filter(h=>!mappedCols.has(h) && colTypes[h]!=="delete");
   let safeExtraCols=getSafeExtraCols(extraCols);
-  let headers=["aquisicao_id","name","locale","phone","email","grupo_controle",...safeExtraCols];
+  let headers=[...OUTPUT_HEADERS,...safeExtraCols];
 
   const total=R.length;
 
@@ -540,7 +547,7 @@ go.onclick=()=>{
 
       // Telefone: só mantém se esta linha for a "eleita" para aquele número (phoneKeepIndex)
       let ph = (po && phoneKeepIndex[po]===i) ? po : "";
-      if(po && ph===""){ dp++; } // contabiliza como zerado por regra de prioridade
+      if(po && ph===""){ dp++; }
 
       // Email: mantém apenas na primeira ocorrência simples
       let emFinal=em;
