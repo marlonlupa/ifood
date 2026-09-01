@@ -1,9 +1,10 @@
-
-<html lang="pt-br"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<html data-type="html" data-identifier="06a460a3-850b-4977-a4cf-150114b288bd" data-title="Tratativas de base com AnotaAi" data-version="3" width="100%" height="800"><head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Tratativas de base</title>
 <link rel="icon" type="image/png" sizes="120x120" href="https://www.ifood.com.br/static/images/favicon/ifood/apple-icon-120x120.png">
 <link rel="apple-touch-icon" href="https://www.ifood.com.br/static/images/favicon/ifood/apple-icon-120x120.png">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
 <style>
 body{transition:.3s}
 .dark{background:#121212!important;color:#eee}
@@ -27,7 +28,19 @@ body{transition:.3s}
 .combined-badge{font-size:.65em;background:#fd7e14}
 .delete-badge{font-size:.65em;background:#dc3545}
 #progressWrap{display:none}
-</style></head><body class="bg-light">
+.anotaai-box {
+  background-color: rgba(111, 66, 193, 0.08);
+  border: 1px solid rgba(111, 66, 193, 0.3);
+  border-radius: 8px;
+  padding: 12px 16px;
+}
+.dark .anotaai-box {
+  background-color: rgba(111, 66, 193, 0.2);
+  border-color: rgba(111, 66, 193, 0.5);
+}
+</style>
+</head>
+<body class="bg-light">
 
 <button id="themeBtn" class="btn btn-outline-secondary" title="Alternar tema">🌙</button>
 
@@ -35,27 +48,41 @@ body{transition:.3s}
 <h2 class="text-center mb-4">Tratativas de base</h2>
 
 <div class="card p-4">
+
+<!-- Marcador AnotaAi -->
+<div class="anotaai-box mb-3 d-flex align-items-center justify-content-between">
+  <div>
+    <div class="form-check form-switch mb-0">
+      <input class="form-check-input" type="checkbox" id="anotaAiCheck">
+      <label class="form-check-label fw-bold" for="anotaAiCheck">⚡ Modo AnotaAi</label>
+    </div>
+  </div>
+</div>
+
 <div id="drop" class="drop text-center">Arraste o CSV aqui ou clique para selecionar<input id="file" type="file" accept=".csv" hidden=""></div>
 
 <div class="text-end mb-3 mt-2">
-  <button id="resetBtn" class="btn btn-outline-danger btn-sm" style="display:none">🔄 Novo arquivo</button>
+  <button id="resetBtn" class="btn btn-outline-danger btn-sm" style="display: none;">🔄 Novo arquivo</button>
 </div>
 
-<div id="mappingWrap" class="mt-4" style="display:none">
+<div id="mappingWrap" class="mt-4" style="display: none;">
   <h5>1. Classifique cada coluna</h5>
-  <p class="text-muted" style="font-size:.9em">Para cada coluna do arquivo, escolha o que ela representa. Colunas marcadas como "Telefone" terão os caracteres não numéricos removidos, o DDI 55 adicionado (se ainda não tiver) e o nono dígito "9" inserido quando faltar. Colunas marcadas como "Ignorar" são mantidas como extras no arquivo final, sem tratamento. Colunas marcadas como "Excluir" não aparecem no arquivo final. <span class="badge saved-badge">azul</span> = mapeamento lembrado de uma importação anterior. <span class="badge combined-badge">laranja</span> = detectado como Aquisição ID já pronta (phone_email).</p>
+  <p class="text-muted" style="font-size:.9em">Para cada coluna do arquivo, escolha o que ela representa. Colunas marcadas como "Telefone" terão os caracteres não numéricos removidos, o DDI 55 adicionado (se ainda não tiver) e o nono dígito "9" inserido quando faltar. Colunas marcadas como "Ignorar" são mantidas como extras no arquivo final, sem tratamento. Colunas marcadas como "Excluir" não aparecem no arquivo final. <span class="badge saved-badge">azul</span> = mapeamento lembrado de uma importação anterior. <span class="badge combined-badge">laranja</span> = detectado como Aquisição ID já pronta.</p>
   <table class="table table-sm align-middle">
     <thead><tr><th>Coluna do CSV</th><th>Exemplo</th><th>Tipo</th></tr></thead>
     <tbody id="colMapBody"></tbody>
   </table>
 
-  <h5 class="mt-4">2. Monte o Aquisição ID</h5>
-  <p class="text-muted" style="font-size:.9em">Marque quais colunas (já tratadas, se telefone/email) devem compor o ID, na ordem desejada. Ex: telefone_new + email. <b>Se você tiver uma coluna marcada como "Aquisição ID pronta", essa etapa é ignorada automaticamente.</b> O Aquisição ID sempre usa o telefone e email completos (nunca zerados), pois é a chave única do registro. Já a coluna "telefone" do arquivo final só fica preenchida na primeira linha que também tiver e-mail junto (linhas com telefone sozinho, sem e-mail, nunca recebem o telefone). A coluna "email" segue a mesma lógica de primeira ocorrência.</p>
-  <div id="aquisicaoIdBuilder" class="d-flex flex-wrap gap-3 mb-2"></div>
-  <div><small class="text-muted">Prévia do ID: </small><code id="aqPreview">-</code></div>
+  <!-- Seção 2: Exibida por padrão, ocultada APENAS se AnotaAi estiver ativo -->
+  <div id="aquisicaoIdSection" class="mt-4" style="display: block;">
+    <h5>2. Monte o Aquisição ID</h5>
+    <p class="text-muted" style="font-size:.9em">Marque quais colunas (já tratadas, se telefone/email) devem compor o ID, na ordem desejada. Ex: telefone_new + email. <b>Se você tiver uma coluna marcada como "Aquisição ID pronta", essa etapa é ignorada automaticamente.</b> O Aquisição ID sempre usa o telefone e email completos (nunca zerados), pois é a chave única do registro. Já a coluna "telefone" do arquivo final só fica preenchida na primeira linha que também tiver e-mail junto. A coluna "email" segue a mesma lógica de primeira ocorrência.</p>
+    <div id="aquisicaoIdBuilder" class="d-flex flex-wrap gap-3 mb-2"></div>
+    <div><small class="text-muted">Prévia do ID: </small><code id="aqPreview">-</code></div>
+  </div>
 </div>
 
-<div class="text-center mt-4"><button id="go" class="btn btn-primary" style="display:none">Processar</button></div>
+<div class="text-center mt-4"><button id="go" class="btn btn-primary" style="display: none;">Processar</button></div>
 
 <div id="progressWrap" class="mt-3">
   <div class="progress" style="height:22px">
@@ -77,7 +104,7 @@ body{transition:.3s}
 </div></div>
 
 <script>
-// ---- Dicionário expandido de variações de colunas ----
+// ---- Dicionário de variações de colunas ----
 const A={
   name:["name","nome","cliente","nome_cliente","full_name","fullname","primeiro_nome","nomecompleto"],
   phone:[
@@ -91,15 +118,13 @@ const A={
     "emailcorrigido","correio","correioeletronico","endereco_email","mail_new","e_mail",
     "emailaddress","email_address","user_email_vuc"
   ],
+  // Apenas chaves já prontas do tipo subscriberkey / aquisicao_id
   combined:[
-    "aquisicao_id","aquisicaoid","subscriberkey","subscriber_key","id_aquisicao","chave_assinante","id"
+    "aquisicao_id","aquisicaoid","subscriberkey","subscriber_key","id_aquisicao","chave_assinante"
   ]
 };
 
-// FIXED_HEADERS: nomes internos usados p/ evitar colisão de nomes com colunas extras
 const FIXED_HEADERS=["aquisicao_id","name","locale","phone","email","grupo_controle"];
-// Cabeçalhos que efetivamente vão no CSV de saída (telefone em português)
-const OUTPUT_HEADERS=["aquisicao_id","name","locale","telefone","email","grupo_controle"];
 
 const MAPPING_STORAGE_KEY="tratativas_col_mapping";
 const CHUNK_SIZE=5000;
@@ -107,6 +132,26 @@ const COMBINED_PATTERN=/^\d{8,15}_.+@.+\..+$/;
 
 let H=[],R=[],colTypes={},aqCols=[],learnedFrom={},autoCombined={};
 const N=s=>(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]/g,"");
+
+const themeBtn = document.getElementById("themeBtn");
+const drop = document.getElementById("drop");
+const file = document.getElementById("file");
+const resetBtn = document.getElementById("resetBtn");
+const go = document.getElementById("go");
+const anotaAiCheck = document.getElementById("anotaAiCheck");
+const aquisicaoIdSection = document.getElementById("aquisicaoIdSection");
+const colMapBody = document.getElementById("colMapBody");
+const aquisicaoIdBuilder = document.getElementById("aquisicaoIdBuilder");
+const aqPreview = document.getElementById("aqPreview");
+const preview = document.getElementById("preview");
+const previewFormatted = document.getElementById("previewFormatted");
+const log = document.getElementById("log");
+const mappingWrap = document.getElementById("mappingWrap");
+const cards = document.getElementById("cards");
+const progressWrap = document.getElementById("progressWrap");
+const progressBar = document.getElementById("progressBar");
+const progressText = document.getElementById("progressText");
+const loader = document.getElementById("loader");
 
 // ---- Persistência de mapeamento ----
 function loadSavedMapping(){
@@ -121,21 +166,37 @@ function saveMappingForColumn(colName, type){
 
 // ---- Tema ----
 if(localStorage.theme==="dark"){document.body.classList.add("dark");themeBtn.textContent="☀️";}
-themeBtn.onclick=()=>{
+themeBtn.addEventListener("click", ()=>{
   document.body.classList.toggle("dark");
   let isDark=document.body.classList.contains("dark");
   localStorage.theme=isDark?"dark":"light";
   themeBtn.textContent=isDark?"☀️":"🌙";
+});
+
+// ---- Toggle AnotaAi ----
+anotaAiCheck.addEventListener("change", ()=>{
+  updateAnotaAiVisibility();
+  renderPreview();
+  renderFormattedPreview();
+});
+
+function updateAnotaAiVisibility(){
+  if(anotaAiCheck.checked){
+    aquisicaoIdSection.style.display="none";
+  } else {
+    let combinedCol=H.find(h=>colTypes[h]==="combined");
+    aquisicaoIdSection.style.display=combinedCol ? "none" : "block";
+  }
 }
 
 // ---- Drop / upload ----
-drop.onclick=()=>file.click();
-drop.ondragover=e=>{e.preventDefault()};
-drop.ondrop=e=>{e.preventDefault();loadFile(e.dataTransfer.files[0])};
-file.onchange=e=>loadFile(e.target.files[0]);
+drop.addEventListener("click", ()=>file.click());
+drop.addEventListener("dragover", e=>e.preventDefault());
+drop.addEventListener("drop", e=>{e.preventDefault();loadFile(e.dataTransfer.files[0])});
+file.addEventListener("change", e=>loadFile(e.target.files[0]));
 
 // ---- Reset / novo arquivo ----
-resetBtn.onclick=()=>{
+resetBtn.addEventListener("click", ()=>{
   H=[];R=[];colTypes={};aqCols=[];learnedFrom={};autoCombined={};
   file.value="";
   mappingWrap.style.display="none";
@@ -149,7 +210,7 @@ resetBtn.onclick=()=>{
   aquisicaoIdBuilder.innerHTML="";
   aqPreview.textContent="-";
   progressWrap.style.display="none";
-}
+});
 
 // ---- Parser robusto de CSV ----
 function parseCSV(text){
@@ -209,7 +270,6 @@ function loadFile(f){
   fr.readAsText(f,"UTF-8");
 }
 
-// Verifica se a maioria dos valores de amostra de uma coluna bate com o padrão phone_email
 function detectCombinedByContent(colName){
   let sample=R.slice(0, Math.min(20, R.length));
   if(!sample.length) return false;
@@ -217,7 +277,6 @@ function detectCombinedByContent(colName){
   return matches / sample.length >= 0.7;
 }
 
-// Detecção: 1) mapeamento salvo 2) match exato no dicionário 3) padrão de conteúdo (combined) 4) fuzzy pelo nome
 function autoDetectTypes(){
   let saved=loadSavedMapping();
   H.forEach(h=>{
@@ -253,7 +312,7 @@ function renderColMapping(){
     let tr=document.createElement("tr");
     tr.className="col-map-row";
     let savedBadge=learnedFrom[h]?' <span class="badge saved-badge">lembrado</span>':'';
-    let combinedBadge=autoCombined[h]?' <span class="badge combined-badge">phone_email detectado</span>':'';
+    let combinedBadge=autoCombined[h]?' <span class="badge combined-badge">Aquisição ID detectada</span>':'';
     tr.innerHTML=`
       <td><b>${h}</b>${savedBadge}${combinedBadge}</td>
       <td class="text-muted">${example}</td>
@@ -262,7 +321,7 @@ function renderColMapping(){
           <option value="name">Nome</option>
           <option value="phone">Telefone</option>
           <option value="email">Email</option>
-          <option value="combined">Aquisição ID pronta (phone_email)</option>
+          <option value="combined">Aquisição ID pronta (salesforce_id / deal_id / phone_email)</option>
           <option value="ignore">Ignorar (manter como extra)</option>
           <option value="delete">🗑️ Excluir (remover do arquivo final)</option>
         </select>
@@ -271,7 +330,7 @@ function renderColMapping(){
     tr.querySelector(".col-type").value=colTypes[h];
   });
   document.querySelectorAll(".col-type").forEach(sel=>{
-    sel.onchange=()=>{
+    sel.addEventListener("change", ()=>{
       colTypes[sel.dataset.col]=sel.value;
       learnedFrom[sel.dataset.col]=false;
       autoCombined[sel.dataset.col]=false;
@@ -280,14 +339,16 @@ function renderColMapping(){
       renderAquisicaoBuilder();
       renderPreview();
       renderFormattedPreview();
-    }
+    });
   });
 }
 
 function renderAquisicaoBuilder(){
   let combinedCol=H.find(h=>colTypes[h]==="combined");
+  updateAnotaAiVisibility();
+
   if(combinedCol){
-    aquisicaoIdBuilder.innerHTML=`<span class="text-muted">Aquisição ID será extraído diretamente da coluna <b>${combinedCol}</b> (phone_email), esta etapa não é necessária.</span>`;
+    aquisicaoIdBuilder.innerHTML=`<span class="text-muted">Aquisição ID será extraído diretamente da coluna <b>${combinedCol}</b>, esta etapa não é necessária.</span>`;
     aqPreview.textContent = R.length ? (R[0][combinedCol]||"-") : "-";
     return;
   }
@@ -308,12 +369,12 @@ function renderAquisicaoBuilder(){
   }
   document.querySelectorAll(".aq-check").forEach(cb=>{
     cb.checked=aqCols.includes(cb.value);
-    cb.onchange=()=>{
+    cb.addEventListener("change", ()=>{
       if(cb.checked){ if(!aqCols.includes(cb.value)) aqCols.push(cb.value); }
       else{ aqCols=aqCols.filter(c=>c!==cb.value); }
       updateAqPreview();
       renderFormattedPreview();
-    }
+    });
   });
   updateAqPreview();
 }
@@ -322,7 +383,6 @@ function labelType(t){
   return {name:"Nome",phone:"Telefone",email:"Email",combined:"Aquisição ID pronta",ignore:"Extra",delete:"Excluir"}[t]||t;
 }
 
-// Monta o Aquisição ID sem deixar underscore sobrando quando alguma parte estiver vazia
 function buildAquisicaoId(parts){
   return parts.filter(p=>p && p.trim()!=="").join("_");
 }
@@ -342,51 +402,77 @@ function updateAqPreview(){
 }
 
 function renderPreview(){
+  if(!R.length){preview.innerHTML="";return;}
   let t="<tr>"+H.map(x=>"<th>"+x+" <small class='text-muted'>("+labelType(colTypes[x])+")</small></th>").join("")+"</tr>";
   R.slice(0,5).forEach(r=>t+="<tr>"+H.map(h=>"<td>"+(r[h]||"")+"</td>").join("")+"</tr>");
   preview.innerHTML=t;
 }
 
-// getSafeExtraCols usa FIXED_HEADERS (nomes internos) pra checar colisão, já que a comparação
-// é feita com o nome original da coluna do CSV de entrada
 function getSafeExtraCols(extraCols){
   return extraCols.map(h => FIXED_HEADERS.includes(h) ? h+"_original" : h);
 }
 
-// Extrai phone e email de um valor no formato "telefone_email" (split apenas no primeiro underscore)
 function splitCombined(value){
   let idx=(value||"").indexOf("_");
-  if(idx===-1) return {phone:"", email:""};
+  if(idx===-1) return {phone:"", email:"", raw: value};
   let phonePart=value.substring(0,idx);
   let emailPart=value.substring(idx+1);
-  return {phone:phonePart.trim(), email:emailPart.trim().toLowerCase()};
+  return {phone:phonePart.trim(), email:emailPart.trim().toLowerCase(), raw: value};
+}
+
+function getIdColumn(){
+  if(anotaAiCheck.checked){
+    let userAssigned = H.find(h => colTypes[h] === "combined");
+    if(userAssigned) return userAssigned;
+
+    let candidate = H.find(h => ["salesforce_id", "salesforceid", "deal_id", "dealid", "id_anotaai", "anotaai_id", "id"].includes(N(h)));
+    if(candidate) return candidate;
+  } else {
+    let combinedCol = H.find(h => colTypes[h] === "combined");
+    if(combinedCol) return combinedCol;
+  }
+  return null;
 }
 
 function renderFormattedPreview(){
   if(!R.length){previewFormatted.innerHTML="";return;}
-  let combinedCol=H.find(h=>colTypes[h]==="combined");
+  let isAnotaAi = anotaAiCheck.checked;
+  let idCol = getIdColumn();
+  let firstHeader = (isAnotaAi && idCol) ? idCol : "aquisicao_id";
+  let outputHeaders = [firstHeader, "name", "locale", "telefone", "email", "grupo_controle"];
+
   let nameCol=H.find(h=>colTypes[h]==="name");
   let phoneCol=H.find(h=>colTypes[h]==="phone");
   let emailCol=H.find(h=>colTypes[h]==="email");
 
-  let mappedCols=new Set([nameCol,phoneCol,emailCol,combinedCol].filter(Boolean));
+  let mappedCols=new Set([nameCol,phoneCol,emailCol,idCol].filter(Boolean));
   let extraCols=H.filter(h=>!mappedCols.has(h) && colTypes[h]!=="delete");
   let safeExtraCols=getSafeExtraCols(extraCols);
 
-  let headers=[...OUTPUT_HEADERS,...safeExtraCols];
+  let headers=[...outputHeaders,...safeExtraCols];
   let t="<tr>"+headers.map(h=>"<th>"+h+"</th>").join("")+"</tr>";
 
   R.slice(0,5).forEach(r=>{
     let n=toTitleCase(r[nameCol]||"");
     let po="",em="",aq="";
 
-    if(combinedCol){
-      let raw=r[combinedCol]||"";
-      let sp=splitCombined(raw);
-      po=C(sp.phone);
-      em=sp.email;
-      aq=buildAquisicaoId([po,em]);
-    }else{
+    if(isAnotaAi && idCol){
+      aq = r[idCol] || "";
+      po = phoneCol ? C(r[phoneCol]) : "";
+      em = emailCol ? (r[emailCol]||"").trim().toLowerCase() : "";
+    } else if(idCol){
+      let raw = r[idCol]||"";
+      if(COMBINED_PATTERN.test(raw)){
+        let sp=splitCombined(raw);
+        po=C(sp.phone);
+        em=sp.email;
+        aq=buildAquisicaoId([po,em]);
+      } else {
+        aq = raw;
+        po = phoneCol ? C(r[phoneCol]) : "";
+        em = emailCol ? (r[emailCol]||"").trim().toLowerCase() : "";
+      }
+    } else {
       po=phoneCol?C(r[phoneCol]):"";
       em=emailCol?(r[emailCol]||"").trim().toLowerCase():"";
       let aqParts=aqCols.map(c=>{
@@ -406,7 +492,6 @@ function renderFormattedPreview(){
   previewFormatted.innerHTML=t;
 }
 
-// Normaliza telefone: remove caracteres não numéricos, garante DDI 55 e o nono dígito quando faltar
 const C=p=>{
   p=(p||"").replace(/\D/g,"");
   if(!p) return "";
@@ -441,27 +526,36 @@ function buildCsvLine(rowArr){
   return rowArr.map((v,idx)=> idx===5 ? String(v) : csvEscape(v)).join(",");
 }
 
-go.onclick=()=>{
-  let combinedCol=H.find(h=>colTypes[h]==="combined");
+go.addEventListener("click", ()=>{
+  let isAnotaAi = anotaAiCheck.checked;
+  let idCol = getIdColumn();
+  let firstHeader = (isAnotaAi && idCol) ? idCol : "aquisicao_id";
+  let outputHeaders = [firstHeader, "name", "locale", "telefone", "email", "grupo_controle"];
+
   let nameCol=H.find(h=>colTypes[h]==="name");
   let phoneCol=H.find(h=>colTypes[h]==="phone");
   let emailCol=H.find(h=>colTypes[h]==="email");
 
-  if(!combinedCol && !phoneCol){
+  if(isAnotaAi && !idCol){
+    log.textContent="Erro no Modo AnotaAi: nenhuma coluna de ID foi identificada (ex: salesforce_id, deal_id, id). Marque a coluna desejada como 'Aquisição ID pronta'.";
+    return;
+  }
+
+  if(!isAnotaAi && !idCol && !phoneCol){
     log.textContent="Erro: nenhuma coluna marcada como Telefone ou como Aquisição ID pronta.";
     return;
   }
-  if(!combinedCol && !aqCols.length){
+  if(!isAnotaAi && !idCol && !aqCols.length){
     log.textContent="Erro: selecione ao menos uma coluna para compor o Aquisição ID.";
     return;
   }
 
   H.forEach(h=>saveMappingForColumn(h, colTypes[h]));
 
-  let mappedCols=new Set([nameCol,phoneCol,emailCol,combinedCol].filter(Boolean));
+  let mappedCols=new Set([nameCol,phoneCol,emailCol,idCol].filter(Boolean));
   let extraCols=H.filter(h=>!mappedCols.has(h) && colTypes[h]!=="delete");
   let safeExtraCols=getSafeExtraCols(extraCols);
-  let headers=[...OUTPUT_HEADERS,...safeExtraCols];
+  let headers=[...outputHeaders,...safeExtraCols];
 
   const total=R.length;
 
@@ -473,36 +567,30 @@ go.onclick=()=>{
   progressText.textContent=`Analisando registros...`;
   log.textContent="";
 
-  // ---- PRIMEIRA PASSADA: calcula phone/email de cada linha e decide qual linha "leva" cada valor ----
-  // Regra (Opção B): telefone só é mantido na PRIMEIRA linha que também tiver email preenchido.
-  // Linhas com telefone sozinho (sem email) nunca recebem o telefone.
-  // Email segue a lógica simples de primeira ocorrência (independente de ter telefone ou não).
   let rowPhones=new Array(total);
   let rowEmails=new Array(total);
-  let phoneKeepIndex={}; // phone -> índice da linha que deve manter o telefone
+  let phoneKeepIndex={};
   let emailSeen=new Set();
 
   for(let i=0;i<total;i++){
     let r=R[i];
     let po="",em="";
-    if(combinedCol){
-      let raw=r[combinedCol]||"";
-      let spl=splitCombined(raw);
+    if(!isAnotaAi && idCol && COMBINED_PATTERN.test(r[idCol]||"")){
+      let spl=splitCombined(r[idCol]||"");
       po=C(spl.phone);
       em=spl.email;
     }else{
-      po=C(r[phoneCol]);
-      em=emailCol?(r[emailCol]||"").trim().toLowerCase():"";
+      po=phoneCol ? C(r[phoneCol]) : "";
+      em=emailCol ? (r[emailCol]||"").trim().toLowerCase() : "";
     }
     rowPhones[i]=po;
     rowEmails[i]=em;
 
-    // Só considera essa linha como candidata a "levar" o telefone se ela tiver email também
     if(po && em && phoneKeepIndex[po]===undefined){
       phoneKeepIndex[po]=i;
     }
   }
-  // Fallback: se um telefone nunca apareceu com email em nenhuma linha, mantém na primeira ocorrência dele mesmo assim
+
   let phoneFirstSeen={};
   for(let i=0;i<total;i++){
     let po=rowPhones[i];
@@ -531,11 +619,17 @@ go.onclick=()=>{
       let po=rowPhones[i];
       let em=rowEmails[i];
 
-      // aquisicao_id SEMPRE usa telefone e email originais (nunca zerados) — é a chave única do registro
       let aq;
-      if(combinedCol){
-        aq=buildAquisicaoId([po,em]);
-      }else{
+      if(isAnotaAi && idCol){
+        aq = r[idCol] || "";
+      } else if(idCol){
+        let raw = r[idCol]||"";
+        if(COMBINED_PATTERN.test(raw)){
+          aq=buildAquisicaoId([po,em]);
+        } else {
+          aq=raw;
+        }
+      } else {
         let aqParts=aqCols.map(c=>{
           if(c===phoneCol) return po;
           if(c===emailCol) return em;
@@ -545,11 +639,9 @@ go.onclick=()=>{
         aq=buildAquisicaoId(aqParts);
       }
 
-      // Telefone: só mantém se esta linha for a "eleita" para aquele número (phoneKeepIndex)
       let ph = (po && phoneKeepIndex[po]===i) ? po : "";
       if(po && ph===""){ dp++; }
 
-      // Email: mantém apenas na primeira ocorrência simples
       let emFinal=em;
       if(em && se.has(em)){emFinal="";de++;}
       else if(em) se.add(em);
@@ -599,15 +691,18 @@ go.onclick=()=>{
       go.disabled=false;
       log.textContent =
         `Concluído com sucesso!\n`+
+        `- Modo AnotaAi: ${isAnotaAi ? "Ativo" : "Inativo"}\n`+
         `- Total de registros processados: ${R.length}\n`+
         `- Grupo controle: ${gc}\n`+
         `- Telefones zerados (repetidos ou linha sem email, priorizando linha com email): ${dp}\n`+
         `- Emails zerados por repetição: ${de}\n`+
         `- Colunas extras preservadas: ${extraCols.length?extraCols.join(", "):"nenhuma"}\n`+
-        (combinedCol ? `- Aquisição ID extraído da coluna: ${combinedCol}` : `- Aquisição ID composto por: ${aqCols.join(" + ")}`);
+        (idCol ? `- ID extraído da coluna: ${idCol}` : `- Aquisição ID composto por: ${aqCols.join(" + ")}`);
     }, 50);
   }
 
   processChunk();
-}
-</script></body></html>
+});
+</script>
+
+</body></html>
