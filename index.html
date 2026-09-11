@@ -1,4 +1,4 @@
-<html data-type="html" data-identifier="06a460a3-850b-4977-a4cf-150114b288bd" data-title="Tratativas de base com AnotaAi" data-version="3" width="100%" height="800"><head>
+<html data-type="html" data-identifier="06a460a3-850b-4977-a4cf-150114b288bd" data-title="Tratativas de base com AnotaAi e Aquisição" data-version="4" width="100%" height="800"><head>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Tratativas de base</title>
@@ -28,13 +28,13 @@ body{transition:.3s}
 .combined-badge{font-size:.65em;background:#fd7e14}
 .delete-badge{font-size:.65em;background:#dc3545}
 #progressWrap{display:none}
-.anotaai-box {
+.config-box {
   background-color: rgba(111, 66, 193, 0.08);
   border: 1px solid rgba(111, 66, 193, 0.3);
   border-radius: 8px;
   padding: 12px 16px;
 }
-.dark .anotaai-box {
+.dark .config-box {
   background-color: rgba(111, 66, 193, 0.2);
   border-color: rgba(111, 66, 193, 0.5);
 }
@@ -49,13 +49,15 @@ body{transition:.3s}
 
 <div class="card p-4">
 
-<!-- Marcador AnotaAi -->
-<div class="anotaai-box mb-3 d-flex align-items-center justify-content-between">
-  <div>
-    <div class="form-check form-switch mb-0">
-      <input class="form-check-input" type="checkbox" id="anotaAiCheck">
-      <label class="form-check-label fw-bold" for="anotaAiCheck">⚡ Modo AnotaAi</label>
-    </div>
+<!-- Marcadores AnotaAi e Aquisição -->
+<div class="config-box mb-3 d-flex flex-wrap align-items-center justify-content-start gap-4">
+  <div class="form-check form-switch mb-0">
+    <input class="form-check-input" type="checkbox" id="anotaAiCheck">
+    <label class="form-check-label fw-bold" for="anotaAiCheck">⚡ Modo AnotaAi</label>
+  </div>
+  <div class="form-check form-switch mb-0">
+    <input class="form-check-input" type="checkbox" id="aquisicaoCheck">
+    <label class="form-check-label fw-bold" for="aquisicaoCheck">🎯 Aquisição</label>
   </div>
 </div>
 
@@ -118,7 +120,6 @@ const A={
     "emailcorrigido","correio","correioeletronico","endereco_email","mail_new","e_mail",
     "emailaddress","email_address","user_email_vuc"
   ],
-  // Apenas chaves já prontas do tipo subscriberkey / aquisicao_id
   combined:[
     "aquisicao_id","aquisicaoid","subscriberkey","subscriber_key","id_aquisicao","chave_assinante"
   ]
@@ -139,6 +140,7 @@ const file = document.getElementById("file");
 const resetBtn = document.getElementById("resetBtn");
 const go = document.getElementById("go");
 const anotaAiCheck = document.getElementById("anotaAiCheck");
+const aquisicaoCheck = document.getElementById("aquisicaoCheck");
 const aquisicaoIdSection = document.getElementById("aquisicaoIdSection");
 const colMapBody = document.getElementById("colMapBody");
 const aquisicaoIdBuilder = document.getElementById("aquisicaoIdBuilder");
@@ -173,9 +175,14 @@ themeBtn.addEventListener("click", ()=>{
   themeBtn.textContent=isDark?"☀️":"🌙";
 });
 
-// ---- Toggle AnotaAi ----
+// ---- Toggles AnotaAi e Aquisição ----
 anotaAiCheck.addEventListener("change", ()=>{
   updateAnotaAiVisibility();
+  renderPreview();
+  renderFormattedPreview();
+});
+
+aquisicaoCheck.addEventListener("change", ()=>{
   renderPreview();
   renderFormattedPreview();
 });
@@ -434,9 +441,17 @@ function getIdColumn(){
   return null;
 }
 
+// Determina se a linha pertence ao Grupo Controle
+function computeGrupoControle(phoneStr, isAquisicaoMode){
+  if(!phoneStr) return "0";
+  let targetDigit = isAquisicaoMode ? "1" : "0";
+  return phoneStr.endsWith(targetDigit) ? "1" : "0";
+}
+
 function renderFormattedPreview(){
   if(!R.length){previewFormatted.innerHTML="";return;}
   let isAnotaAi = anotaAiCheck.checked;
+  let isAquisicao = aquisicaoCheck.checked;
   let idCol = getIdColumn();
   let firstHeader = (isAnotaAi && idCol) ? idCol : "aquisicao_id";
   let outputHeaders = [firstHeader, "name", "locale", "telefone", "email", "grupo_controle"];
@@ -484,7 +499,7 @@ function renderFormattedPreview(){
       aq=buildAquisicaoId(aqParts);
     }
 
-    let g=po.endsWith("0")?"1":"0";
+    let g = computeGrupoControle(po, isAquisicao);
     let extraVals=extraCols.map(c=>r[c]||"");
     let rowVals=[aq,n,"br",po,em,g,...extraVals];
     t+="<tr>"+rowVals.map(v=>"<td>"+v+"</td>").join("")+"</tr>";
@@ -528,6 +543,7 @@ function buildCsvLine(rowArr){
 
 go.addEventListener("click", ()=>{
   let isAnotaAi = anotaAiCheck.checked;
+  let isAquisicao = aquisicaoCheck.checked;
   let idCol = getIdColumn();
   let firstHeader = (isAnotaAi && idCol) ? idCol : "aquisicao_id";
   let outputHeaders = [firstHeader, "name", "locale", "telefone", "email", "grupo_controle"];
@@ -646,7 +662,7 @@ go.addEventListener("click", ()=>{
       if(em && se.has(em)){emFinal="";de++;}
       else if(em) se.add(em);
 
-      let g=po.endsWith("0")?"1":"0";
+      let g = computeGrupoControle(po, isAquisicao);
       if(g==="1") gc++;
 
       let extraVals=extraCols.map(c=>r[c]||"");
@@ -683,7 +699,7 @@ go.addEventListener("click", ()=>{
 
       cards.innerHTML=`
         <div class="col"><div class="card p-2"><b>${R.length.toLocaleString('pt-BR')}</b><br>Total de Registros</div></div>
-        <div class="col"><div class="card p-2"><b>${gc.toLocaleString('pt-BR')}</b><br>Grupo Controle</div></div>
+        <div class="col"><div class="card p-2"><b>${gc.toLocaleString('pt-BR')}</b><br>Grupo Controle (${isAquisicao ? 'Final 1' : 'Final 0'})</div></div>
         <div class="col"><div class="card p-2"><b>${dp.toLocaleString('pt-BR')}</b><br>Telefones Zerados (repetidos ou sem email)</div></div>
         <div class="col"><div class="card p-2"><b>${de.toLocaleString('pt-BR')}</b><br>Emails Zerados (repetidos)</div></div>
       `;
@@ -692,6 +708,7 @@ go.addEventListener("click", ()=>{
       log.textContent =
         `Concluído com sucesso!\n`+
         `- Modo AnotaAi: ${isAnotaAi ? "Ativo" : "Inativo"}\n`+
+        `- Modo Aquisição: ${isAquisicao ? "Ativo (Grupo Controle = final 1)" : "Inativo (Grupo Controle = final 0)"}\n`+
         `- Total de registros processados: ${R.length}\n`+
         `- Grupo controle: ${gc}\n`+
         `- Telefones zerados (repetidos ou linha sem email, priorizando linha com email): ${dp}\n`+
