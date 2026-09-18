@@ -1,10 +1,12 @@
-<html data-type="html" data-identifier="06a460a3-850b-4977-a4cf-150114b288bd" data-title="Tratativas de base com AnotaAi e Aquisição" data-version="4" width="100%" height="800"><head>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<!-- saved from url=(0035)https://marlonlupa.github.io/ifood/ -->
+<html data-type="html" data-identifier="06a460a3-850b-4977-a4cf-150114b288bd" data-title="Tratativas de base com AnotaAi e Aquisição" data-version="4" width="100%" height="800"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Tratativas de base</title>
 <link rel="icon" type="image/png" sizes="120x120" href="https://www.ifood.com.br/static/images/favicon/ifood/apple-icon-120x120.png">
 <link rel="apple-touch-icon" href="https://www.ifood.com.br/static/images/favicon/ifood/apple-icon-120x120.png">
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="./Tratativas de base_files/bootstrap.min.css" rel="stylesheet">
 <style>
 body{transition:.3s}
 .dark{background:#121212!important;color:#eee}
@@ -40,7 +42,7 @@ body{transition:.3s}
 }
 </style>
 </head>
-<body class="bg-light">
+<body class="bg-light" cz-shortcut-listen="true">
 <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-F2J0G83J9B"></script>
 <script>
@@ -50,6 +52,7 @@ body{transition:.3s}
 
   gtag('config', 'G-F2J0G83J9B');
 </script>
+
 <button id="themeBtn" class="btn btn-outline-secondary" title="Alternar tema">🌙</button>
 
 <div class="container py-4">
@@ -61,11 +64,11 @@ body{transition:.3s}
 <div class="config-box mb-3 d-flex flex-wrap align-items-center justify-content-start gap-4">
   <div class="form-check form-switch mb-0">
     <input class="form-check-input" type="checkbox" id="anotaAiCheck">
-    <label class="form-check-label fw-bold" for="anotaAiCheck">⚡ Modo AnotaAi</label>
+    <label class="form-check-label fw-bold" for="anotaAiCheck">⚡ AnotaAi</label>
   </div>
   <div class="form-check form-switch mb-0">
     <input class="form-check-input" type="checkbox" id="aquisicaoCheck">
-    <label class="form-check-label fw-bold" for="aquisicaoCheck">🎯 Aquisição</label>
+    <label class="form-check-label fw-bold" for="aquisicaoCheck">🎯 GCU final 0</label>
   </div>
 </div>
 
@@ -452,7 +455,7 @@ function getIdColumn(){
 // Determina se a linha pertence ao Grupo Controle
 function computeGrupoControle(phoneStr, isAquisicaoMode){
   if(!phoneStr) return "0";
-  let targetDigit = isAquisicaoMode ? "1" : "0";
+  let targetDigit = isAquisicaoMode ? "0" : "1";
   return phoneStr.endsWith(targetDigit) ? "1" : "0";
 }
 
@@ -561,7 +564,7 @@ go.addEventListener("click", ()=>{
   let emailCol=H.find(h=>colTypes[h]==="email");
 
   if(isAnotaAi && !idCol){
-    log.textContent="Erro no Modo AnotaAi: nenhuma coluna de ID foi identificada (ex: salesforce_id, deal_id, id). Marque a coluna desejada como 'Aquisição ID pronta'.";
+    log.textContent="Erro no modo AnotaAi: nenhuma coluna de ID foi identificada (ex: salesforce_id, deal_id, id). Marque a coluna desejada como 'Aquisição ID pronta'.";
     return;
   }
 
@@ -707,7 +710,7 @@ go.addEventListener("click", ()=>{
 
       cards.innerHTML=`
         <div class="col"><div class="card p-2"><b>${R.length.toLocaleString('pt-BR')}</b><br>Total de Registros</div></div>
-        <div class="col"><div class="card p-2"><b>${gc.toLocaleString('pt-BR')}</b><br>Grupo Controle (${isAquisicao ? 'Final 1' : 'Final 0'})</div></div>
+        <div class="col"><div class="card p-2"><b>${gc.toLocaleString('pt-BR')}</b><br>Grupo Controle (${isAquisicao ? 'Final 0' : 'Final 1'})</div></div>
         <div class="col"><div class="card p-2"><b>${dp.toLocaleString('pt-BR')}</b><br>Telefones Zerados (repetidos ou sem email)</div></div>
         <div class="col"><div class="card p-2"><b>${de.toLocaleString('pt-BR')}</b><br>Emails Zerados (repetidos)</div></div>
       `;
@@ -716,7 +719,7 @@ go.addEventListener("click", ()=>{
       log.textContent =
         `Concluído com sucesso!\n`+
         `- Modo AnotaAi: ${isAnotaAi ? "Ativo" : "Inativo"}\n`+
-        `- Modo Aquisição: ${isAquisicao ? "Ativo (Grupo Controle = final 1)" : "Inativo (Grupo Controle = final 0)"}\n`+
+        `- GCU final 0: ${isAquisicao ? "Ativo (Grupo Controle = final 0)" : "Inativo (Grupo Controle = final 1)"}\n`+
         `- Total de registros processados: ${R.length}\n`+
         `- Grupo controle: ${gc}\n`+
         `- Telefones zerados (repetidos ou linha sem email, priorizando linha com email): ${dp}\n`+
@@ -729,5 +732,6 @@ go.addEventListener("click", ()=>{
   processChunk();
 });
 </script>
+
 
 </body></html>
