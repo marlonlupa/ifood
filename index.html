@@ -40,7 +40,7 @@ body{transition:.3s}
 }
 </style>
 </head>
-<body class="bg-light" onload="window.A={name:[&quot;name&quot;,&quot;nome&quot;,&quot;cliente&quot;,&quot;nome_cliente&quot;,&quot;full_name&quot;,&quot;fullname&quot;,&quot;primeiro_nome&quot;,&quot;nomecompleto&quot;],phone:[&quot;phone&quot;,&quot;phone_new&quot;,&quot;telefone&quot;,&quot;celular&quot;,&quot;telefone_new&quot;,&quot;telehone_new&quot;,&quot;telefone_corrigido&quot;,&quot;phone_corrigido&quot;,&quot;fone&quot;,&quot;fone_new&quot;,&quot;numero&quot;,&quot;numero_telefone&quot;,&quot;whatsapp&quot;,&quot;whats&quot;,&quot;tel&quot;,&quot;telefonecelular&quot;,&quot;cellphone&quot;,&quot;mobile&quot;,&quot;contato&quot;,&quot;numerocelular&quot;,&quot;phonenumber&quot;,&quot;user_phone_number&quot;,&quot;user_phone_vuc&quot;],email:[&quot;email&quot;,&quot;e-mail&quot;,&quot;mail&quot;,&quot;email_new&quot;,&quot;e-mail_new&quot;,&quot;e-mail_corrigido&quot;,&quot;email_corrigido&quot;,&quot;emailcorrigido&quot;,&quot;correio&quot;,&quot;correioeletronico&quot;,&quot;endereco_email&quot;,&quot;mail_new&quot;,&quot;e_mail&quot;,&quot;emailaddress&quot;,&quot;email_address&quot;,&quot;user_email_vuc&quot;],combined:[&quot;aquisicao_id&quot;,&quot;aquisicaoid&quot;,&quot;subscriberkey&quot;,&quot;subscriber_key&quot;,&quot;id_aquisicao&quot;,&quot;chave_assinante&quot;]};window.FIXED_HEADERS=[&quot;aquisicao_id&quot;,&quot;name&quot;,&quot;locale&quot;,&quot;phone&quot;,&quot;email&quot;,&quot;grupo_controle&quot;];window.MAPPING_STORAGE_KEY=&quot;tratativas_col_mapping&quot;;window.CHUNK_SIZE=5000;window.COMBINED_PATTERN=/^\d{8,15}_.+@.+\..+$/;window.H=[];window.R=[];window.colTypes={};window.aqCols=[];window.learnedFrom={};window.autoCombined={};window.N=function(s){return(s||&quot;&quot;).toLowerCase().normalize(&quot;NFD&quot;).replace(/[\u0300-\u036f]/g,&quot;&quot;).replace(/[^a-z0-9]/g,&quot;&quot;);};if(localStorage.theme===&quot;dark&quot;){document.body.classList.add(&quot;dark&quot;);let btn=document.getElementById(&quot;themeBtn&quot;);if(btn)btn.textContent=&quot;☀️&quot;;}window.toggleTheme=function(){document.body.classList.toggle(&quot;dark&quot;);let isDark=document.body.classList.contains(&quot;dark&quot;);localStorage.theme=isDark?&quot;dark&quot;:&quot;light&quot;;document.getElementById(&quot;themeBtn&quot;).textContent=isDark?&quot;☀️&quot;:&quot;🌙&quot;;};window.loadSavedMapping=function(){try{return JSON.parse(localStorage.getItem(MAPPING_STORAGE_KEY)||&quot;{}&quot;);}catch(e){return{};}};window.saveMappingForColumn=function(colName,type){let saved=loadSavedMapping();saved[N(colName)]=type;localStorage.setItem(MAPPING_STORAGE_KEY,JSON.stringify(saved));};window.updateAnotaAiVisibility=function(){let anotaAiCheck=document.getElementById(&quot;anotaAiCheck&quot;);let aquisicaoIdSection=document.getElementById(&quot;aquisicaoIdSection&quot;);if(anotaAiCheck.checked){aquisicaoIdSection.style.display=&quot;none&quot;;}else{let combinedCol=H.find(function(h){return colTypes[h]===&quot;combined&quot;;});aquisicaoIdSection.style.display=combinedCol?&quot;none&quot;:&quot;block&quot;;}};window.onAnotaAiChange=function(){updateAnotaAiVisibility();renderPreview();renderFormattedPreview();};window.onAquisicaoChange=function(){renderPreview();renderFormattedPreview();};window.resetAll=function(){window.H=[];window.R=[];window.colTypes={};window.aqCols=[];window.learnedFrom={};window.autoCombined={};document.getElementById(&quot;file&quot;).value=&quot;&quot;;document.getElementById(&quot;mappingWrap&quot;).style.display=&quot;none&quot;;document.getElementById(&quot;go&quot;).style.display=&quot;none&quot;;document.getElementById(&quot;resetBtn&quot;).style.display=&quot;none&quot;;document.getElementById(&quot;cards&quot;).innerHTML=&quot;&quot;;document.getElementById(&quot;preview&quot;).innerHTML=&quot;&quot;;document.getElementById(&quot;previewFormatted&quot;).innerHTML=&quot;&quot;;document.getElementById(&quot;log&quot;).textContent=&quot;&quot;;document.getElementById(&quot;colMapBody&quot;).innerHTML=&quot;&quot;;document.getElementById(&quot;aquisicaoIdBuilder&quot;).innerHTML=&quot;&quot;;document.getElementById(&quot;aqPreview&quot;).textContent=&quot;-&quot;;document.getElementById(&quot;progressWrap&quot;).style.display=&quot;none&quot;;};window.parseCSV=function(text){text=text.replace(/^\uFEFF/,&quot;&quot;);let sep=&quot;,&quot;;let firstLine=text.split(/\r?\n/)[0];if((firstLine.match(/;/g)||[]).length&gt;(firstLine.match(/,/g)||[]).length)sep=&quot;;&quot;;let rows=[],row=[],field=&quot;&quot;,inQuotes=false;for(let i=0;i&lt;text.length;i++){let c=text[i],n=text[i+1];if(inQuotes){if(c===&quot;\&quot;&quot;&amp;&amp;n===&quot;\&quot;&quot;){field+=&quot;\&quot;&quot;;i++;}else if(c===&quot;\&quot;&quot;){inQuotes=false;}else field+=c;}else{if(c===&quot;\&quot;&quot;){inQuotes=true;}else if(c===sep){row.push(field);field=&quot;&quot;;}else if(c===&quot;\n&quot;){row.push(field);rows.push(row);row=[];field=&quot;&quot;;}else if(c===&quot;\r&quot;){}else field+=c;}}if(field.length||row.length){row.push(field);rows.push(row);}rows=rows.filter(function(r){return r.length&gt;1||(r.length===1&amp;&amp;r[0].trim()!==&quot;&quot;);});let h=rows[0].map(function(x){return x.trim();});let r=rows.slice(1).map(function(cols){let o={};h.forEach(function(k,i){o[k]=(cols[i]||&quot;&quot;).trim();});return o;});return{h:h,r:r};};window.processRawCsvText=function(rawText){let log=document.getElementById(&quot;log&quot;);try{let p=parseCSV(rawText);if(!p.h.length){log.textContent=&quot;Erro: CSV vazio ou inválido.&quot;;return;}window.H=p.h;window.R=p.r;window.colTypes={};window.aqCols=[];window.learnedFrom={};window.autoCombined={};autoDetectTypes();renderColMapping();renderAquisicaoBuilder();renderPreview();renderFormattedPreview();document.getElementById(&quot;mappingWrap&quot;).style.display=&quot;block&quot;;document.getElementById(&quot;go&quot;).style.display=&quot;inline-block&quot;;document.getElementById(&quot;resetBtn&quot;).style.display=&quot;inline-block&quot;;document.getElementById(&quot;cards&quot;).innerHTML=&quot;&quot;;let sizeWarning=R.length&gt;100000?&quot; ⚠️ Base grande: o processamento será feito em lotes para não travar o navegador.&quot;:&quot;&quot;;log.textContent=&quot;Arquivo carregado: &quot;+R.length+&quot; registros, &quot;+H.length+&quot; colunas.&quot;+sizeWarning;}catch(err){log.textContent=&quot;Erro ao processar CSV: &quot;+err.message;}};window.loadFile=function(f){if(!f)return;let log=document.getElementById(&quot;log&quot;);log.textContent=&quot;Lendo arquivo...&quot;;let fr=new FileReader();fr.onload=function(){processRawCsvText(fr.result);};fr.onerror=function(){log.textContent=&quot;Erro ao ler o arquivo.&quot;;};fr.readAsText(f,&quot;UTF-8&quot;);};window.detectCombinedByContent=function(colName){let sample=R.slice(0,Math.min(20,R.length));if(!sample.length)return false;let matches=sample.filter(function(r){return COMBINED_PATTERN.test((r[colName]||&quot;&quot;).trim());}).length;return(matches/sample.length)&gt;=0.7;};window.autoDetectTypes=function(){let saved=loadSavedMapping();H.forEach(function(h){let norm=N(h);if(saved[norm]){colTypes[h]=saved[norm];learnedFrom[h]=true;autoCombined[h]=false;return;}let found=&quot;ignore&quot;;for(let k in A){if(A[k].map(N).includes(norm)){found=k;break;}}if(found===&quot;ignore&quot;&amp;&amp;detectCombinedByContent(h)){found=&quot;combined&quot;;autoCombined[h]=true;}if(found===&quot;ignore&quot;){if(/fone|tel|phone|cel|whats/.test(norm))found=&quot;phone&quot;;else if(/mail/.test(norm))found=&quot;email&quot;;else if(/nome|name|cliente/.test(norm))found=&quot;name&quot;;}colTypes[h]=found;learnedFrom[h]=false;});};window.renderColMapping=function(){let colMapBody=document.getElementById(&quot;colMapBody&quot;);colMapBody.innerHTML=&quot;&quot;;H.forEach(function(h){let example=(R[0]&amp;&amp;R[0][h])||&quot;&quot;;let tr=document.createElement(&quot;tr&quot;);tr.className=&quot;col-map-row&quot;;let savedBadge=learnedFrom[h]?' &lt;span class=&quot;badge saved-badge&quot;&gt;lembrado&lt;/span&gt;':'';let combinedBadge=autoCombined[h]?' &lt;span class=&quot;badge combined-badge&quot;&gt;Aquisição ID detectada&lt;/span&gt;':'';tr.innerHTML='&lt;td&gt;&lt;b&gt;'+h+'&lt;/b&gt;'+savedBadge+combinedBadge+'&lt;/td&gt;'+'&lt;td class=&quot;text-muted&quot;&gt;'+example+'&lt;/td&gt;'+'&lt;td&gt;&lt;select class=&quot;form-select form-select-sm col-type&quot; data-col=&quot;'+h+'&quot; onchange=&quot;window.handleColTypeChange(this)&quot;&gt;'+'&lt;option value=&quot;name&quot;&gt;Nome&lt;/option&gt;'+'&lt;option value=&quot;phone&quot;&gt;Telefone&lt;/option&gt;'+'&lt;option value=&quot;email&quot;&gt;Email&lt;/option&gt;'+'&lt;option value=&quot;combined&quot;&gt;Aquisição ID pronta (salesforce_id / deal_id / phone_email)&lt;/option&gt;'+'&lt;option value=&quot;ignore&quot;&gt;Ignorar (manter como extra)&lt;/option&gt;'+'&lt;option value=&quot;delete&quot;&gt;🗑️ Excluir (remover do arquivo final)&lt;/option&gt;'+'&lt;/select&gt;&lt;/td&gt;';colMapBody.appendChild(tr);tr.querySelector(&quot;.col-type&quot;).value=colTypes[h];});};window.handleColTypeChange=function(sel){let col=sel.dataset.col;colTypes[col]=sel.value;learnedFrom[col]=false;autoCombined[col]=false;saveMappingForColumn(col,sel.value);renderColMapping();renderAquisicaoBuilder();renderPreview();renderFormattedPreview();};window.renderAquisicaoBuilder=function(){let combinedCol=H.find(function(h){return colTypes[h]===&quot;combined&quot;;});updateAnotaAiVisibility();let aquisicaoIdBuilder=document.getElementById(&quot;aquisicaoIdBuilder&quot;);let aqPreview=document.getElementById(&quot;aqPreview&quot;);if(combinedCol){aquisicaoIdBuilder.innerHTML='&lt;span class=&quot;text-muted&quot;&gt;Aquisição ID será extraído diretamente da coluna &lt;b&gt;'+combinedCol+'&lt;/b&gt;, esta etapa não é necessária.&lt;/span&gt;';aqPreview.textContent=R.length?(R[0][combinedCol]||&quot;-&quot;):&quot;-&quot;;return;}aquisicaoIdBuilder.innerHTML=&quot;&quot;;H.forEach(function(h){if(colTypes[h]===&quot;combined&quot;||colTypes[h]===&quot;delete&quot;)return;let checked=aqCols.includes(h)?&quot;checked&quot;:&quot;&quot;;let div=document.createElement(&quot;div&quot;);div.className=&quot;form-check&quot;;div.innerHTML='&lt;input class=&quot;form-check-input aq-check&quot; type=&quot;checkbox&quot; value=&quot;'+h+'&quot; id=&quot;aq_'+h+'&quot; '+checked+' onchange=&quot;window.handleAqCheckChange(this)&quot;&gt;'+'&lt;label class=&quot;form-check-label&quot; for=&quot;aq_'+h+'&quot;&gt;'+h+' &lt;span class=&quot;badge bg-secondary badge-type&quot;&gt;'+labelType(colTypes[h])+'&lt;/span&gt;&lt;/label&gt;';aquisicaoIdBuilder.appendChild(div);});if(!aqCols.length){let phoneCol=H.find(function(h){return colTypes[h]===&quot;phone&quot;;});let emailCol=H.find(function(h){return colTypes[h]===&quot;email&quot;;});aqCols=[phoneCol,emailCol].filter(Boolean);}document.querySelectorAll(&quot;.aq-check&quot;).forEach(function(cb){cb.checked=aqCols.includes(cb.value);});updateAqPreview();};window.handleAqCheckChange=function(cb){if(cb.checked){if(!aqCols.includes(cb.value))aqCols.push(cb.value);}else{aqCols=aqCols.filter(function(c){return c!==cb.value;});}updateAqPreview();renderFormattedPreview();};window.labelType=function(t){return{name:&quot;Nome&quot;,phone:&quot;Telefone&quot;,email:&quot;Email&quot;,combined:&quot;Aquisição ID pronta&quot;,ignore:&quot;Extra&quot;,delete:&quot;Excluir&quot;}[t]||t;};window.buildAquisicaoId=function(parts){return parts.filter(function(p){return p&amp;&amp;p.trim()!==&quot;&quot;;}).join(&quot;_&quot;);};window.updateAqPreview=function(){let combinedCol=H.find(function(h){return colTypes[h]===&quot;combined&quot;;});let aqPreview=document.getElementById(&quot;aqPreview&quot;);if(combinedCol){aqPreview.textContent=R.length?(R[0][combinedCol]||&quot;-&quot;):&quot;-&quot;;return;}if(!R.length||!aqCols.length){aqPreview.textContent=&quot;-&quot;;return;}let vals=aqCols.map(function(c){let raw=R[0][c]||&quot;&quot;;return colTypes[c]===&quot;phone&quot;?C(raw):raw.trim().toLowerCase();});aqPreview.textContent=buildAquisicaoId(vals)||&quot;-&quot;;};window.renderPreview=function(){let preview=document.getElementById(&quot;preview&quot;);if(!R.length){preview.innerHTML=&quot;&quot;;return;}let t=&quot;&lt;tr&gt;&quot;+H.map(function(x){return&quot;&lt;th&gt;&quot;+x+&quot; &lt;small class='text-muted'&gt;(&quot;+labelType(colTypes[x])+&quot;)&lt;/small&gt;&lt;/th&gt;&quot;;}).join(&quot;&quot;)+&quot;&lt;/tr&gt;&quot;;R.slice(0,5).forEach(function(r){t+=&quot;&lt;tr&gt;&quot;+H.map(function(h){return&quot;&lt;td&gt;&quot;+(r[h]||&quot;&quot;)+&quot;&lt;/td&gt;&quot;;}).join(&quot;&quot;)+&quot;&lt;/tr&gt;&quot;;});preview.innerHTML=t;};window.getSafeExtraCols=function(extraCols){return extraCols.map(function(h){return FIXED_HEADERS.includes(h)?h+&quot;_original&quot;:h;});};window.splitCombined=function(value){let idx=(value||&quot;&quot;).indexOf(&quot;_&quot;);if(idx===-1)return{phone:&quot;&quot;,email:&quot;&quot;,raw:value};let phonePart=value.substring(0,idx);let emailPart=value.substring(idx+1);return{phone:phonePart.trim(),email:emailPart.trim().toLowerCase(),raw:value};};window.getIdColumn=function(){let anotaAiCheck=document.getElementById(&quot;anotaAiCheck&quot;);if(anotaAiCheck.checked){let userAssigned=H.find(function(h){return colTypes[h]===&quot;combined&quot;;});if(userAssigned)return userAssigned;let candidate=H.find(function(h){return[&quot;salesforce_id&quot;,&quot;salesforceid&quot;,&quot;deal_id&quot;,&quot;dealid&quot;,&quot;id_anotaai&quot;,&quot;anotaai_id&quot;,&quot;id&quot;].includes(N(h));});if(candidate)return candidate;}else{let combinedCol=H.find(function(h){return colTypes[h]===&quot;combined&quot;;});if(combinedCol)return combinedCol;}return null;};window.computeGrupoControle=function(phoneStr,isGcuFinal0){if(!phoneStr)return&quot;0&quot;;let targetDigit=isGcuFinal0?&quot;0&quot;:&quot;1&quot;;return phoneStr.endsWith(targetDigit)?&quot;1&quot;:&quot;0&quot;;};window.renderFormattedPreview=function(){let previewFormatted=document.getElementById(&quot;previewFormatted&quot;);if(!R.length){previewFormatted.innerHTML=&quot;&quot;;return;}let isAnotaAi=document.getElementById(&quot;anotaAiCheck&quot;).checked;let isGcuFinal0=document.getElementById(&quot;aquisicaoCheck&quot;).checked;let idCol=getIdColumn();let firstHeader=(isAnotaAi&amp;&amp;idCol)?idCol:&quot;aquisicao_id&quot;;let outputHeaders=[firstHeader,&quot;name&quot;,&quot;locale&quot;,&quot;telefone&quot;,&quot;email&quot;,&quot;grupo_controle&quot;];let nameCol=H.find(function(h){return colTypes[h]===&quot;name&quot;;});let phoneCol=H.find(function(h){return colTypes[h]===&quot;phone&quot;;});let emailCol=H.find(function(h){return colTypes[h]===&quot;email&quot;;});let mappedCols=new Set([nameCol,phoneCol,emailCol,idCol].filter(Boolean));let extraCols=H.filter(function(h){return!mappedCols.has(h)&amp;&amp;colTypes[h]!==&quot;delete&quot;;});let safeExtraCols=getSafeExtraCols(extraCols);let headers=[...outputHeaders,...safeExtraCols];let t=&quot;&lt;tr&gt;&quot;+headers.map(function(h){return&quot;&lt;th&gt;&quot;+h+&quot;&lt;/th&gt;&quot;;}).join(&quot;&quot;)+&quot;&lt;/tr&gt;&quot;;R.slice(0,5).forEach(function(r){let n=toTitleCase(r[nameCol]||&quot;&quot;);let po=&quot;&quot;,em=&quot;&quot;,aq=&quot;&quot;;if(isAnotaAi&amp;&amp;idCol){aq=r[idCol]||&quot;&quot;;po=phoneCol?C(r[phoneCol]):&quot;&quot;;em=emailCol?(r[emailCol]||&quot;&quot;).trim().toLowerCase():&quot;&quot;;}else if(idCol){let raw=r[idCol]||&quot;&quot;;if(COMBINED_PATTERN.test(raw)){let sp=splitCombined(raw);po=C(sp.phone);em=sp.email;aq=buildAquisicaoId([po,em]);}else{aq=raw;po=phoneCol?C(r[phoneCol]):&quot;&quot;;em=emailCol?(r[emailCol]||&quot;&quot;).trim().toLowerCase():&quot;&quot;;}}else{po=phoneCol?C(r[phoneCol]):&quot;&quot;;em=emailCol?(r[emailCol]||&quot;&quot;).trim().toLowerCase():&quot;&quot;;let aqParts=aqCols.map(function(c){if(c===phoneCol)return po;if(c===emailCol)return em;let raw=r[c]||&quot;&quot;;return colTypes[c]===&quot;phone&quot;?C(raw):raw.trim().toLowerCase();});aq=buildAquisicaoId(aqParts);}let g=computeGrupoControle(po,isGcuFinal0);let extraVals=extraCols.map(function(c){return r[c]||&quot;&quot;;});let rowVals=[aq,n,&quot;br&quot;,po,em,g,...extraVals];t+=&quot;&lt;tr&gt;&quot;+rowVals.map(function(v){return&quot;&lt;td&gt;&quot;+v+&quot;&lt;/td&gt;&quot;;}).join(&quot;&quot;)+&quot;&lt;/tr&gt;&quot;;});previewFormatted.innerHTML=t;};window.C=function(p){p=(p||&quot;&quot;).replace(/\D/g,&quot;&quot;);if(!p)return&quot;&quot;;if(!p.startsWith(&quot;55&quot;))p=&quot;55&quot;+p;let rest=p.slice(2);if(rest.length===10){let ddd=rest.slice(0,2);let number=rest.slice(2);if(!number.startsWith(&quot;9&quot;)){number=&quot;9&quot;+number;}rest=ddd+number;}return&quot;55&quot;+rest;};window.toTitleCase=function(str){if(!str)return&quot;&quot;;return str.trim().toLowerCase().replace(/(^|\s|-|')([a-zà-ú])/g,function(m,sep,letra){return sep+letra.toUpperCase();});};window.csvEscape=function(v){let s=String(v);if(/[&quot;,\n\r]/.test(s)){return'&quot;'+s.replace(/&quot;/g,'&quot;&quot;')+'&quot;';}return s;};window.buildCsvLine=function(rowArr){return rowArr.map(function(v,idx){return idx===5?String(v):csvEscape(v);}).join(&quot;,&quot;);};window.processData=function(){let isAnotaAi=document.getElementById(&quot;anotaAiCheck&quot;).checked;let isGcuFinal0=document.getElementById(&quot;aquisicaoCheck&quot;).checked;let idCol=getIdColumn();let firstHeader=(isAnotaAi&amp;&amp;idCol)?idCol:&quot;aquisicao_id&quot;;let outputHeaders=[firstHeader,&quot;name&quot;,&quot;locale&quot;,&quot;telefone&quot;,&quot;email&quot;,&quot;grupo_controle&quot;];let nameCol=H.find(function(h){return colTypes[h]===&quot;name&quot;;});let phoneCol=H.find(function(h){return colTypes[h]===&quot;phone&quot;;});let emailCol=H.find(function(h){return colTypes[h]===&quot;email&quot;;});let log=document.getElementById(&quot;log&quot;);if(isAnotaAi&amp;&amp;!idCol){log.textContent=&quot;Erro no AnotaAi: nenhuma coluna de ID foi identificada (ex: salesforce_id, deal_id, id). Marque a coluna desejada como 'Aquisição ID pronta'.&quot;;return;}if(!isAnotaAi&amp;&amp;!idCol&amp;&amp;!phoneCol){log.textContent=&quot;Erro: nenhuma coluna marcada como Telefone ou como Aquisição ID pronta.&quot;;return;}if(!isAnotaAi&amp;&amp;!idCol&amp;&amp;!aqCols.length){log.textContent=&quot;Erro: selecione ao menos uma coluna para compor o Aquisição ID.&quot;;return;}H.forEach(function(h){saveMappingForColumn(h,colTypes[h]);});let mappedCols=new Set([nameCol,phoneCol,emailCol,idCol].filter(Boolean));let extraCols=H.filter(function(h){return!mappedCols.has(h)&amp;&amp;colTypes[h]!==&quot;delete&quot;;});let safeExtraCols=getSafeExtraCols(extraCols);let headers=[...outputHeaders,...safeExtraCols];const total=R.length;let goBtn=document.getElementById(&quot;go&quot;);let progressWrap=document.getElementById(&quot;progressWrap&quot;);let progressBar=document.getElementById(&quot;progressBar&quot;);let progressText=document.getElementById(&quot;progressText&quot;);let loader=document.getElementById(&quot;loader&quot;);goBtn.disabled=true;progressWrap.style.display=&quot;block&quot;;loader.style.display=&quot;none&quot;;progressBar.style.width=&quot;0%&quot;;progressBar.textContent=&quot;0%&quot;;progressText.textContent=&quot;Analisando registros...&quot;;log.textContent=&quot;&quot;;let rowPhones=new Array(total);let rowEmails=new Array(total);let phoneKeepIndex={};for(let i=0;i&lt;total;i++){let r=R[i];let po=&quot;&quot;,em=&quot;&quot;;if(!isAnotaAi&amp;&amp;idCol&amp;&amp;COMBINED_PATTERN.test(r[idCol]||&quot;&quot;)){let spl=splitCombined(r[idCol]||&quot;&quot;);po=C(spl.phone);em=spl.email;}else{po=phoneCol?C(r[phoneCol]):&quot;&quot;;em=emailCol?(r[emailCol]||&quot;&quot;).trim().toLowerCase():&quot;&quot;;}rowPhones[i]=po;rowEmails[i]=em;if(po&amp;&amp;em&amp;&amp;phoneKeepIndex[po]===undefined){phoneKeepIndex[po]=i;}}let phoneFirstSeen={};for(let i=0;i&lt;total;i++){let po=rowPhones[i];if(po&amp;&amp;phoneFirstSeen[po]===undefined){phoneFirstSeen[po]=i;}}for(let po in phoneFirstSeen){if(phoneKeepIndex[po]===undefined){phoneKeepIndex[po]=phoneFirstSeen[po];}}let se=new Set();let gc=0,dp=0,de=0;let csvLines=[];csvLines.push(headers.map(function(h){return csvEscape(h);}).join(&quot;,&quot;));let processed=0;function processChunk(){let end=Math.min(processed+CHUNK_SIZE,total);for(let i=processed;i&lt;end;i++){let r=R[i];let n=toTitleCase(r[nameCol]||&quot;&quot;);let po=rowPhones[i];let em=rowEmails[i];let aq;if(isAnotaAi&amp;&amp;idCol){aq=r[idCol]||&quot;&quot;;}else if(idCol){let raw=r[idCol]||&quot;&quot;;if(COMBINED_PATTERN.test(raw)){aq=buildAquisicaoId([po,em]);}else{aq=raw;}}else{let aqParts=aqCols.map(function(c){if(c===phoneCol)return po;if(c===emailCol)return em;let raw=r[c]||&quot;&quot;;return colTypes[c]===&quot;phone&quot;?C(raw):raw.trim().toLowerCase();});aq=buildAquisicaoId(aqParts);}let ph=(po&amp;&amp;phoneKeepIndex[po]===i)?po:&quot;&quot;;if(po&amp;&amp;ph===&quot;&quot;){dp++;}let emFinal=em;if(em&amp;&amp;se.has(em)){emFinal=&quot;&quot;;de++;}else if(em)se.add(em);let g=computeGrupoControle(po,isGcuFinal0);if(g===&quot;1&quot;)gc++;let extraVals=extraCols.map(function(c){return r[c]||&quot;&quot;;});csvLines.push(buildCsvLine([aq,n,&quot;br&quot;,ph,emFinal,g,...extraVals]));}processed=end;let pct=Math.round((processed/total)*100);progressBar.style.width=pct+&quot;%&quot;;progressBar.textContent=pct+&quot;%&quot;;progressText.textContent=&quot;Processando &quot;+processed.toLocaleString('pt-BR')+&quot; de &quot;+total.toLocaleString('pt-BR')+&quot;...&quot;;if(processed&lt;total){setTimeout(processChunk,0);}else{finishExport();}}function finishExport(){progressText.textContent=&quot;Gerando arquivo para download...&quot;;setTimeout(function(){let BOM=&quot;\uFEFF&quot;;let parts=[BOM];const JOIN_BATCH=2000;for(let i=0;i&lt;csvLines.length;i+=JOIN_BATCH){parts.push(csvLines.slice(i,i+JOIN_BATCH).join(&quot;\n&quot;)+&quot;\n&quot;);}let blob=new Blob(parts,{type:&quot;text/csv;charset=utf-8;&quot;});let a=document.createElement(&quot;a&quot;);a.href=URL.createObjectURL(blob);a.download=&quot;tratado.csv&quot;;a.click();URL.revokeObjectURL(a.href);document.getElementById(&quot;cards&quot;).innerHTML='&lt;div class=&quot;col&quot;&gt;&lt;div class=&quot;card p-2&quot;&gt;&lt;b&gt;'+R.length.toLocaleString('pt-BR')+'&lt;/b&gt;&lt;br&gt;Total de Registros&lt;/div&gt;&lt;/div&gt;'+'&lt;div class=&quot;col&quot;&gt;&lt;div class=&quot;card p-2&quot;&gt;&lt;b&gt;'+gc.toLocaleString('pt-BR')+'&lt;/b&gt;&lt;br&gt;Grupo Controle ('+(isGcuFinal0?'Final 0':'Final 1')+')&lt;/div&gt;&lt;/div&gt;'+'&lt;div class=&quot;col&quot;&gt;&lt;div class=&quot;card p-2&quot;&gt;&lt;b&gt;'+dp.toLocaleString('pt-BR')+'&lt;/b&gt;&lt;br&gt;Telefones Zerados (repetidos ou sem email)&lt;/div&gt;&lt;/div&gt;'+'&lt;div class=&quot;col&quot;&gt;&lt;div class=&quot;card p-2&quot;&gt;&lt;b&gt;'+de.toLocaleString('pt-BR')+'&lt;/b&gt;&lt;br&gt;Emails Zerados (repetidos)&lt;/div&gt;&lt;/div&gt;';progressWrap.style.display=&quot;none&quot;;goBtn.disabled=false;log.textContent=&quot;Concluído com sucesso!\n&quot;+&quot;- AnotaAi: &quot;+(isAnotaAi?&quot;Ativo&quot;:&quot;Inativo&quot;)+&quot;\n&quot;+&quot;- GCU final 0: &quot;+(isGcuFinal0?&quot;Ativo (Grupo Controle = final 0)&quot;:&quot;Inativo (Grupo Controle = final 1)&quot;)+&quot;\n&quot;+&quot;- Total de registros processados: &quot;+R.length+&quot;\n&quot;+&quot;- Grupo controle: &quot;+gc+&quot;\n&quot;+&quot;- Telefones zerados (repetidos ou linha sem email, priorizando linha com email): &quot;+dp+&quot;\n&quot;+&quot;- Emails zerados por repetição: &quot;+de+&quot;\n&quot;+&quot;- Colunas extras preservadas: &quot;+(extraCols.length?extraCols.join(&quot;, &quot;):&quot;nenhuma&quot;)+&quot;\n&quot;+(idCol?&quot;- ID extraído da coluna: &quot;+idCol:&quot;- Aquisição ID composto por: &quot;+aqCols.join(&quot; + &quot;));},50);}processChunk();};">
+<body class="bg-light">
   <!-- Google tag (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-F2J0G83J9B"></script>
 <script>
@@ -50,6 +50,855 @@ body{transition:.3s}
 
   gtag('config', 'G-F2J0G83J9B');
 </script>
+
+<script>
+        window.A={name:["name","nome","cliente","nome_cliente","full_name","fullname","primeiro_nome","nomecompleto"],phone:["phone","phone_new","telefone","celular","telefone_new","telehone_new","telefone_corrigido","phone_corrigido","fone","fone_new","numero","numero_telefone","whatsapp","whats","tel","telefonecelular","cellphone","mobile","contato","numerocelular","phonenumber","user_phone_number","user_phone_vuc"],email:["email","e-mail","mail","email_new","e-mail_new","e-mail_corrigido","email_corrigido","emailcorrigido","correio","correioeletronico","endereco_email","mail_new","e_mail","emailaddress","email_address","user_email_vuc"],combined:["aquisicao_id","aquisicaoid","subscriberkey","subscriber_key","id_aquisicao","chave_assinante"]};
+        window.FIXED_HEADERS=["aquisicao_id","name","locale","phone","email","grupo_controle"];
+        window.MAPPING_STORAGE_KEY="tratativas_col_mapping";
+        window.CHUNK_SIZE=5000;
+        window.COMBINED_PATTERN=/^\d{8,15}_.+@.+\..+$/;
+        window.H=[];
+        window.R=[];
+        window.colTypes={};
+        window.aqCols=[];
+        window.learnedFrom={};
+        window.autoCombined={};
+
+        window.N=function(s){
+            return(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]/g,"");
+        };
+
+        if(localStorage.theme==="dark"){
+            document.body.classList.add("dark");
+            let btn=document.getElementById("themeBtn");
+            if(btn)btn.textContent="☀️";
+        }
+
+        window.toggleTheme=function(){
+            document.body.classList.toggle("dark");
+            let isDark=document.body.classList.contains("dark");
+            localStorage.theme=isDark?"dark":"light";
+            document.getElementById("themeBtn").textContent=isDark?"☀️":"🌙";
+        };
+
+        window.loadSavedMapping=function(){
+            try{
+                return JSON.parse(localStorage.getItem(MAPPING_STORAGE_KEY)||"{}");
+            }catch(e){
+                return{};
+            }
+        };
+
+        window.saveMappingForColumn=function(colName,type){
+            let saved=loadSavedMapping();
+            saved[N(colName)]=type;
+            localStorage.setItem(MAPPING_STORAGE_KEY,JSON.stringify(saved));
+        };
+
+        window.updateAnotaAiVisibility=function(){
+            let anotaAiCheck=document.getElementById("anotaAiCheck");
+            let aquisicaoIdSection=document.getElementById("aquisicaoIdSection");
+
+            if(anotaAiCheck.checked){
+                aquisicaoIdSection.style.display="none";
+            }else{
+                let combinedCol=H.find(function(h){
+                    return colTypes[h]==="combined";
+                });
+
+                aquisicaoIdSection.style.display=combinedCol?"none":"block";
+            }
+        };
+
+        window.onAnotaAiChange=function(){
+            updateAnotaAiVisibility();
+            renderPreview();
+            renderFormattedPreview();
+        };
+
+        window.onAquisicaoChange=function(){
+            renderPreview();
+            renderFormattedPreview();
+        };
+
+        window.resetAll=function(){
+            window.H=[];
+            window.R=[];
+            window.colTypes={};
+            window.aqCols=[];
+            window.learnedFrom={};
+            window.autoCombined={};
+
+            document.getElementById("file").value="";
+            document.getElementById("mappingWrap").style.display="none";
+            document.getElementById("go").style.display="none";
+            document.getElementById("resetBtn").style.display="none";
+            document.getElementById("cards").innerHTML="";
+            document.getElementById("preview").innerHTML="";
+            document.getElementById("previewFormatted").innerHTML="";
+            document.getElementById("log").textContent="";
+            document.getElementById("colMapBody").innerHTML="";
+            document.getElementById("aquisicaoIdBuilder").innerHTML="";
+            document.getElementById("aqPreview").textContent="-";
+            document.getElementById("progressWrap").style.display="none";
+        };
+
+        window.parseCSV=function(text){
+            text=text.replace(/^\uFEFF/,"");
+
+            let sep=",";
+            let firstLine=text.split(/\r?\n/)[0];
+
+            if((firstLine.match(/;/g)||[]).length>(firstLine.match(/,/g)||[]).length){
+                sep=";";
+            }
+
+            let rows=[],row=[],field="",inQuotes=false;
+
+            for(let i=0;i<text.length;i++){
+                let c=text[i],n=text[i+1];
+
+                if(inQuotes){
+                    if(c==="\""&&n==="\""){
+                        field+="\"";
+                        i++;
+                    }else if(c==="\""){
+                        inQuotes=false;
+                    }else{
+                        field+=c;
+                    }
+                }else{
+                    if(c==="\""){
+                        inQuotes=true;
+                    }else if(c===sep){
+                        row.push(field);
+                        field="";
+                    }else if(c==="\n"){
+                        row.push(field);
+                        rows.push(row);
+                        row=[];
+                        field="";
+                    }else if(c==="\r"){
+                    }else{
+                        field+=c;
+                    }
+                }
+            }
+
+            if(field.length||row.length){
+                row.push(field);
+                rows.push(row);
+            }
+
+            rows=rows.filter(function(r){
+                return r.length>1||(r.length===1&&r[0].trim()!=="");
+            });
+
+            let h=rows[0].map(function(x){
+                return x.trim();
+            });
+
+            let r=rows.slice(1).map(function(cols){
+                let o={};
+                h.forEach(function(k,i){
+                    o[k]=(cols[i]||"").trim();
+                });
+                return o;
+            });
+
+            return{h:h,r:r};
+        };
+
+        window.processRawCsvText=function(rawText){
+            let log=document.getElementById("log");
+
+            try{
+                let p=parseCSV(rawText);
+
+                if(!p.h.length){
+                    log.textContent="Erro: CSV vazio ou inválido.";
+                    return;
+                }
+
+                window.H=p.h;
+                window.R=p.r;
+                window.colTypes={};
+                window.aqCols=[];
+                window.learnedFrom={};
+                window.autoCombined={};
+
+                autoDetectTypes();
+                renderColMapping();
+                renderAquisicaoBuilder();
+                renderPreview();
+                renderFormattedPreview();
+
+                document.getElementById("mappingWrap").style.display="block";
+                document.getElementById("go").style.display="inline-block";
+                document.getElementById("resetBtn").style.display="inline-block";
+                document.getElementById("cards").innerHTML="";
+
+                let sizeWarning=R.length>100000?" ⚠️ Base grande: o processamento será feito em lotes para não travar o navegador.":"";
+
+                log.textContent="Arquivo carregado: "+R.length+" registros, "+H.length+" colunas."+sizeWarning;
+            }catch(err){
+                log.textContent="Erro ao processar CSV: "+err.message;
+            }
+        };
+
+        window.loadFile=function(f){
+            if(!f)return;
+
+            let log=document.getElementById("log");
+            log.textContent="Lendo arquivo...";
+
+            let fr=new FileReader();
+
+            fr.onload=function(){
+                processRawCsvText(fr.result);
+            };
+
+            fr.onerror=function(){
+                log.textContent="Erro ao ler o arquivo.";
+            };
+
+            fr.readAsText(f,"UTF-8");
+        };
+
+        window.detectCombinedByContent=function(colName){
+            let sample=R.slice(0,Math.min(20,R.length));
+
+            if(!sample.length)return false;
+
+            let matches=sample.filter(function(r){
+                return COMBINED_PATTERN.test((r[colName]||"").trim());
+            }).length;
+
+            return(matches/sample.length)>=0.7;
+        };
+
+        window.autoDetectTypes=function(){
+            let saved=loadSavedMapping();
+
+            H.forEach(function(h){
+                let norm=N(h);
+
+                if(saved[norm]){
+                    colTypes[h]=saved[norm];
+                    learnedFrom[h]=true;
+                    autoCombined[h]=false;
+                    return;
+                }
+
+                let found="ignore";
+
+                for(let k in A){
+                    if(A[k].map(N).includes(norm)){
+                        found=k;
+                        break;
+                    }
+                }
+
+                if(found==="ignore"&&detectCombinedByContent(h)){
+                    found="combined";
+                    autoCombined[h]=true;
+                }
+
+                if(found==="ignore"){
+                    if(/fone|tel|phone|cel|whats/.test(norm)){
+                        found="phone";
+                    }else if(/mail/.test(norm)){
+                        found="email";
+                    }else if(/nome|name|cliente/.test(norm)){
+                        found="name";
+                    }
+                }
+
+                colTypes[h]=found;
+                learnedFrom[h]=false;
+            });
+        };
+
+        window.renderColMapping=function(){
+            let colMapBody=document.getElementById("colMapBody");
+            colMapBody.innerHTML="";
+
+            H.forEach(function(h){
+                let example=(R[0]&&R[0][h])||"";
+                let tr=document.createElement("tr");
+
+                tr.className="col-map-row";
+
+                let savedBadge=learnedFrom[h]?' <span class="badge saved-badge">lembrado</span>':'';
+                let combinedBadge=autoCombined[h]?' <span class="badge combined-badge">Aquisição ID detectada</span>':'';
+
+                tr.innerHTML='<td><b>'+h+'</b>'+savedBadge+combinedBadge+'</td>'+'<td class="text-muted">'+example+'</td>'+'<td><select class="form-select form-select-sm col-type" data-col="'+h+'" onchange="window.handleColTypeChange(this)">'+'<option value="name">Nome</option>'+'<option value="phone">Telefone</option>'+'<option value="email">Email</option>'+'<option value="combined">Aquisição ID pronta (salesforce_id / deal_id / phone_email)</option>'+'<option value="ignore">Ignorar (manter como extra)</option>'+'<option value="delete">🗑️ Excluir (remover do arquivo final)</option>'+'</select></td>';
+
+                colMapBody.appendChild(tr);
+                tr.querySelector(".col-type").value=colTypes[h];
+            });
+        };
+
+        window.handleColTypeChange=function(sel){
+            let col=sel.dataset.col;
+
+            colTypes[col]=sel.value;
+            learnedFrom[col]=false;
+            autoCombined[col]=false;
+
+            saveMappingForColumn(col,sel.value);
+            renderColMapping();
+            renderAquisicaoBuilder();
+            renderPreview();
+            renderFormattedPreview();
+        };
+
+        window.renderAquisicaoBuilder=function(){
+            let combinedCol=H.find(function(h){
+                return colTypes[h]==="combined";
+            });
+
+            updateAnotaAiVisibility();
+
+            let aquisicaoIdBuilder=document.getElementById("aquisicaoIdBuilder");
+            let aqPreview=document.getElementById("aqPreview");
+
+            if(combinedCol){
+                aquisicaoIdBuilder.innerHTML='<span class="text-muted">Aquisição ID será extraído diretamente da coluna <b>'+combinedCol+'</b>, esta etapa não é necessária.</span>';
+                aqPreview.textContent=R.length?(R[0][combinedCol]||"-"):"-";
+                return;
+            }
+
+            aquisicaoIdBuilder.innerHTML="";
+
+            H.forEach(function(h){
+                if(colTypes[h]==="combined"||colTypes[h]==="delete")return;
+
+                let checked=aqCols.includes(h)?"checked":"";
+                let div=document.createElement("div");
+
+                div.className="form-check";
+
+                div.innerHTML='<input class="form-check-input aq-check" type="checkbox" value="'+h+'" id="aq_'+h+'" '+checked+' onchange="window.handleAqCheckChange(this)">'+'<label class="form-check-label" for="aq_'+h+'">'+h+' <span class="badge bg-secondary badge-type">'+labelType(colTypes[h])+'</span></label>';
+
+                aquisicaoIdBuilder.appendChild(div);
+            });
+
+            if(!aqCols.length){
+                let phoneCol=H.find(function(h){
+                    return colTypes[h]==="phone";
+                });
+
+                let emailCol=H.find(function(h){
+                    return colTypes[h]==="email";
+                });
+
+                aqCols=[phoneCol,emailCol].filter(Boolean);
+            }
+
+            document.querySelectorAll(".aq-check").forEach(function(cb){
+                cb.checked=aqCols.includes(cb.value);
+            });
+
+            updateAqPreview();
+        };
+
+        window.handleAqCheckChange=function(cb){
+            if(cb.checked){
+                if(!aqCols.includes(cb.value)){
+                    aqCols.push(cb.value);
+                }
+            }else{
+                aqCols=aqCols.filter(function(c){
+                    return c!==cb.value;
+                });
+            }
+
+            updateAqPreview();
+            renderFormattedPreview();
+        };
+
+        window.labelType=function(t){
+            return{
+                name:"Nome",
+                phone:"Telefone",
+                email:"Email",
+                combined:"Aquisição ID pronta",
+                ignore:"Extra",
+                delete:"Excluir"
+            }[t]||t;
+        };
+
+        window.buildAquisicaoId=function(parts){
+            return parts.filter(function(p){
+                return p&&p.trim()!=="";
+            }).join("_");
+        };
+
+        window.updateAqPreview=function(){
+            let combinedCol=H.find(function(h){
+                return colTypes[h]==="combined";
+            });
+
+            let aqPreview=document.getElementById("aqPreview");
+
+            if(combinedCol){
+                aqPreview.textContent=R.length?(R[0][combinedCol]||"-"):"-";
+                return;
+            }
+
+            if(!R.length||!aqCols.length){
+                aqPreview.textContent="-";
+                return;
+            }
+
+            let vals=aqCols.map(function(c){
+                let raw=R[0][c]||"";
+                return colTypes[c]==="phone"?C(raw):raw.trim().toLowerCase();
+            });
+
+            aqPreview.textContent=buildAquisicaoId(vals)||"-";
+        };
+
+        window.renderPreview=function(){
+            let preview=document.getElementById("preview");
+
+            if(!R.length){
+                preview.innerHTML="";
+                return;
+            }
+
+            let t="<tr>"+H.map(function(x){
+                return"<th>"+x+" <small class='text-muted'>("+labelType(colTypes[x])+")</small></th>";
+            }).join("")+"</tr>";
+
+            R.slice(0,5).forEach(function(r){
+                t+="<tr>"+H.map(function(h){
+                    return"<td>"+(r[h]||"")+"</td>";
+                }).join("")+"</tr>";
+            });
+
+            preview.innerHTML=t;
+        };
+
+        window.getSafeExtraCols=function(extraCols){
+            return extraCols.map(function(h){
+                return FIXED_HEADERS.includes(h)?h+"_original":h;
+            });
+        };
+
+        window.splitCombined=function(value){
+            let idx=(value||"").indexOf("_");
+
+            if(idx===-1)return{phone:"",email:"",raw:value};
+
+            let phonePart=value.substring(0,idx);
+            let emailPart=value.substring(idx+1);
+
+            return{
+                phone:phonePart.trim(),
+                email:emailPart.trim().toLowerCase(),
+                raw:value
+            };
+        };
+
+        window.getIdColumn=function(){
+            let anotaAiCheck=document.getElementById("anotaAiCheck");
+
+            if(anotaAiCheck.checked){
+                let userAssigned=H.find(function(h){
+                    return colTypes[h]==="combined";
+                });
+
+                if(userAssigned)return userAssigned;
+
+                let candidate=H.find(function(h){
+                    return["salesforce_id","salesforceid","deal_id","dealid","id_anotaai","anotaai_id","id"].includes(N(h));
+                });
+
+                if(candidate)return candidate;
+            }else{
+                let combinedCol=H.find(function(h){
+                    return colTypes[h]==="combined";
+                });
+
+                if(combinedCol)return combinedCol;
+            }
+
+            return null;
+        };
+
+        window.computeGrupoControle=function(phoneStr,isGcuFinal0){
+            if(!phoneStr)return"0";
+
+            let targetDigit=isGcuFinal0?"0":"1";
+
+            return phoneStr.endsWith(targetDigit)?"1":"0";
+        };
+
+        window.renderFormattedPreview=function(){
+            let previewFormatted=document.getElementById("previewFormatted");
+
+            if(!R.length){
+                previewFormatted.innerHTML="";
+                return;
+            }
+
+            let isAnotaAi=document.getElementById("anotaAiCheck").checked;
+            let isGcuFinal0=document.getElementById("aquisicaoCheck").checked;
+            let idCol=getIdColumn();
+            let firstHeader=(isAnotaAi&&idCol)?idCol:"aquisicao_id";
+            let outputHeaders=[firstHeader,"name","locale","telefone","email","grupo_controle"];
+
+            let nameCol=H.find(function(h){
+                return colTypes[h]==="name";
+            });
+
+            let phoneCol=H.find(function(h){
+                return colTypes[h]==="phone";
+            });
+
+            let emailCol=H.find(function(h){
+                return colTypes[h]==="email";
+            });
+
+            let mappedCols=new Set([nameCol,phoneCol,emailCol,idCol].filter(Boolean));
+
+            let extraCols=H.filter(function(h){
+                return!mappedCols.has(h)&&colTypes[h]!=="delete";
+            });
+
+            let safeExtraCols=getSafeExtraCols(extraCols);
+            let headers=[...outputHeaders,...safeExtraCols];
+
+            let t="<tr>"+headers.map(function(h){
+                return"<th>"+h+"</th>";
+            }).join("")+"</tr>";
+
+            R.slice(0,5).forEach(function(r){
+                let n=toTitleCase(r[nameCol]||"");
+                let po="",em="",aq="";
+
+                if(isAnotaAi&&idCol){
+                    aq=r[idCol]||"";
+                    po=phoneCol?C(r[phoneCol]):"";
+                    em=emailCol?(r[emailCol]||"").trim().toLowerCase():"";
+                }else if(idCol){
+                    let raw=r[idCol]||"";
+
+                    if(COMBINED_PATTERN.test(raw)){
+                        let sp=splitCombined(raw);
+                        po=C(sp.phone);
+                        em=sp.email;
+                        aq=buildAquisicaoId([po,em]);
+                    }else{
+                        aq=raw;
+                        po=phoneCol?C(r[phoneCol]):"";
+                        em=emailCol?(r[emailCol]||"").trim().toLowerCase():"";
+                    }
+                }else{
+                    po=phoneCol?C(r[phoneCol]):"";
+                    em=emailCol?(r[emailCol]||"").trim().toLowerCase():"";
+
+                    let aqParts=aqCols.map(function(c){
+                        if(c===phoneCol)return po;
+                        if(c===emailCol)return em;
+
+                        let raw=r[c]||"";
+
+                        return colTypes[c]==="phone"?C(raw):raw.trim().toLowerCase();
+                    });
+
+                    aq=buildAquisicaoId(aqParts);
+                }
+
+                let g=computeGrupoControle(po,isGcuFinal0);
+                let extraVals=extraCols.map(function(c){
+                    return r[c]||"";
+                });
+
+                let rowVals=[aq,n,"br",po,em,g,...extraVals];
+
+                t+="<tr>"+rowVals.map(function(v){
+                    return"<td>"+v+"</td>";
+                }).join("")+"</tr>";
+            });
+
+            previewFormatted.innerHTML=t;
+        };
+
+        window.C=function(p){
+            p=(p||"").replace(/\D/g,"");
+
+            if(!p)return"";
+
+            if(!p.startsWith("55"))p="55"+p;
+
+            let rest=p.slice(2);
+
+            if(rest.length===10){
+                let ddd=rest.slice(0,2);
+                let number=rest.slice(2);
+
+                if(!number.startsWith("9")){
+                    number="9"+number;
+                }
+
+                rest=ddd+number;
+            }
+
+            return"55"+rest;
+        };
+
+        window.toTitleCase=function(str){
+            if(!str)return"";
+
+            return str.trim().toLowerCase().replace(/(^|\s|-|')([a-zà-ú])/g,function(m,sep,letra){
+                return sep+letra.toUpperCase();
+            });
+        };
+
+        window.csvEscape=function(v){
+            let s=String(v);
+
+            if(/[",\n\r]/.test(s)){
+                return'"'+s.replace(/"/g,'""')+'"';
+            }
+
+            return s;
+        };
+
+        window.buildCsvLine=function(rowArr){
+            return rowArr.map(function(v,idx){
+                return idx===5?String(v):csvEscape(v);
+            }).join(",");
+        };
+
+        window.processData=function(){
+            let isAnotaAi=document.getElementById("anotaAiCheck").checked;
+            let isGcuFinal0=document.getElementById("aquisicaoCheck").checked;
+            let idCol=getIdColumn();
+            let firstHeader=(isAnotaAi&&idCol)?idCol:"aquisicao_id";
+            let outputHeaders=[firstHeader,"name","locale","telefone","email","grupo_controle"];
+
+            let nameCol=H.find(function(h){
+                return colTypes[h]==="name";
+            });
+
+            let phoneCol=H.find(function(h){
+                return colTypes[h]==="phone";
+            });
+
+            let emailCol=H.find(function(h){
+                return colTypes[h]==="email";
+            });
+
+            let log=document.getElementById("log");
+
+            if(isAnotaAi&&!idCol){
+                log.textContent="Erro no AnotaAi: nenhuma coluna de ID foi identificada (ex: salesforce_id, deal_id, id). Marque a coluna desejada como 'Aquisição ID pronta'.";
+                return;
+            }
+
+            if(!isAnotaAi&&!idCol&&!phoneCol){
+                log.textContent="Erro: nenhuma coluna marcada como Telefone ou como Aquisição ID pronta.";
+                return;
+            }
+
+            if(!isAnotaAi&&!idCol&&!aqCols.length){
+                log.textContent="Erro: selecione ao menos uma coluna para compor o Aquisição ID.";
+                return;
+            }
+
+            H.forEach(function(h){
+                saveMappingForColumn(h,colTypes[h]);
+            });
+
+            let mappedCols=new Set([nameCol,phoneCol,emailCol,idCol].filter(Boolean));
+
+            let extraCols=H.filter(function(h){
+                return!mappedCols.has(h)&&colTypes[h]!=="delete";
+            });
+
+            let safeExtraCols=getSafeExtraCols(extraCols);
+            let headers=[...outputHeaders,...safeExtraCols];
+
+            const total=R.length;
+
+            let goBtn=document.getElementById("go");
+            let progressWrap=document.getElementById("progressWrap");
+            let progressBar=document.getElementById("progressBar");
+            let progressText=document.getElementById("progressText");
+            let loader=document.getElementById("loader");
+
+            goBtn.disabled=true;
+            progressWrap.style.display="block";
+            loader.style.display="none";
+            progressBar.style.width="0%";
+            progressBar.textContent="0%";
+            progressText.textContent="Analisando registros...";
+            log.textContent="";
+
+            let rowPhones=new Array(total);
+            let rowEmails=new Array(total);
+            let phoneKeepIndex={};
+
+            for(let i=0;i<total;i++){
+                let r=R[i];
+                let po="",em="";
+
+                if(!isAnotaAi&&idCol&&COMBINED_PATTERN.test(r[idCol]||"")){
+                    let spl=splitCombined(r[idCol]||"");
+                    po=C(spl.phone);
+                    em=spl.email;
+                }else{
+                    po=phoneCol?C(r[phoneCol]):"";
+                    em=emailCol?(r[emailCol]||"").trim().toLowerCase():"";
+                }
+
+                rowPhones[i]=po;
+                rowEmails[i]=em;
+
+                if(po&&phoneKeepIndex[po]===undefined){
+                    phoneKeepIndex[po]=i;
+                }
+            }
+
+            let phoneFirstSeen={};
+
+            for(let i=0;i<total;i++){
+                let po=rowPhones[i];
+
+                if(po&&phoneFirstSeen[po]===undefined){
+                    phoneFirstSeen[po]=i;
+                }
+            }
+
+            for(let po in phoneFirstSeen){
+                if(phoneKeepIndex[po]===undefined){
+                    phoneKeepIndex[po]=phoneFirstSeen[po];
+                }
+            }
+
+            let se=new Set();
+            let gc=0,dp=0,de=0;
+            let csvLines=[];
+
+            csvLines.push(headers.map(function(h){
+                return csvEscape(h);
+            }).join(","));
+
+            let processed=0;
+
+            function processChunk(){
+                let end=Math.min(processed+CHUNK_SIZE,total);
+
+                for(let i=processed;i<end;i++){
+                    let r=R[i];
+                    let n=toTitleCase(r[nameCol]||"");
+                    let po=rowPhones[i];
+                    let em=rowEmails[i];
+                    let aq;
+
+                    if(isAnotaAi&&idCol){
+                        aq=r[idCol]||"";
+                    }else if(idCol){
+                        let raw=r[idCol]||"";
+
+                        if(COMBINED_PATTERN.test(raw)){
+                            aq=buildAquisicaoId([po,em]);
+                        }else{
+                            aq=raw;
+                        }
+                    }else{
+                        let aqParts=aqCols.map(function(c){
+                            if(c===phoneCol)return po;
+                            if(c===emailCol)return em;
+
+                            let raw=r[c]||"";
+
+                            return colTypes[c]==="phone"?C(raw):raw.trim().toLowerCase();
+                        });
+
+                        aq=buildAquisicaoId(aqParts);
+                    }
+
+                    let ph=(po&&phoneKeepIndex[po]===i)?po:"";
+
+                    if(po&&ph===""){
+                        dp++;
+                    }
+
+                    let emFinal=em;
+
+                    if(em&&se.has(em)){
+                        emFinal="";
+                        de++;
+                    }else if(em){
+                        se.add(em);
+                    }
+
+                    let g=computeGrupoControle(po,isGcuFinal0);
+
+                    if(g==="1"){
+                        gc++;
+                    }
+
+                    let extraVals=extraCols.map(function(c){
+                        return r[c]||"";
+                    });
+
+                    csvLines.push(buildCsvLine([aq,n,"br",ph,emFinal,g,...extraVals]));
+                }
+
+                processed=end;
+
+                let pct=Math.round((processed/total)*100);
+
+                progressBar.style.width=pct+"%";
+                progressBar.textContent=pct+"%";
+                progressText.textContent="Processando "+processed.toLocaleString('pt-BR')+" de "+total.toLocaleString('pt-BR')+"...";
+
+                if(processed<total){
+                    setTimeout(processChunk,0);
+                }else{
+                    finishExport();
+                }
+            }
+
+            function finishExport(){
+                progressText.textContent="Gerando arquivo para download...";
+
+                setTimeout(function(){
+                    let BOM="\uFEFF";
+                    let parts=[BOM];
+                    const JOIN_BATCH=2000;
+
+                    for(let i=0;i<csvLines.length;i+=JOIN_BATCH){
+                        parts.push(csvLines.slice(i,i+JOIN_BATCH).join("\n")+"\n");
+                    }
+
+                    let blob=new Blob(parts,{type:"text/csv;charset=utf-8;"});
+                    let a=document.createElement("a");
+
+                    a.href=URL.createObjectURL(blob);
+                    a.download="tratado.csv";
+                    a.click();
+
+                    URL.revokeObjectURL(a.href);
+
+                    document.getElementById("cards").innerHTML='<div class="col"><div class="card p-2"><b>'+R.length.toLocaleString('pt-BR')+'</b><br>Total de Registros</div></div>'+'<div class="col"><div class="card p-2"><b>'+gc.toLocaleString('pt-BR')+'</b><br>Grupo Controle ('+(isGcuFinal0?'Final 0':'Final 1')+')</div></div>'+'<div class="col"><div class="card p-2"><b>'+dp.toLocaleString('pt-BR')+'</b><br>Telefones Zerados (repetidos ou sem email)</div></div>'+'<div class="col"><div class="card p-2"><b>'+de.toLocaleString('pt-BR')+'</b><br>Emails Zerados (repetidos)</div></div>';
+
+                    progressWrap.style.display="none";
+                    goBtn.disabled=false;
+
+                    log.textContent="Concluído com sucesso!\n"+"- AnotaAi: "+(isAnotaAi?"Ativo":"Inativo")+"\n"+"- GCU final 0: "+(isGcuFinal0?"Ativo (Grupo Controle = final 0)":"Inativo (Grupo Controle = final 1)")+"\n"+"- Total de registros processados: "+R.length+"\n"+"- Grupo controle: "+gc+"\n"+"- Telefones zerados (repetidos ou linha sem email, priorizando linha com email): "+dp+"\n"+"- Emails zerados por repetição: "+de+"\n"+"- Colunas extras preservadas: "+(extraCols.length?extraCols.join(", "):"nenhuma")+"\n"+(idCol?"- ID extraído da coluna: "+idCol:"- Aquisição ID composto por: "+aqCols.join(" + "));
+                },50);
+            }
+
+            processChunk();
+        };
+    </script>
 
 <button id="themeBtn" class="btn btn-outline-secondary" title="Alternar tema" onclick="window.toggleTheme()">🌙</button>
 
